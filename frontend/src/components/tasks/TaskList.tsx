@@ -8,6 +8,7 @@ import { TaskModal } from "@/components/common/TaskModal";
 import { Task } from "@task-app/shared";
 import { useTasks } from "../../hooks/useTasks";
 import { LoadingSpinner } from "../common/LoadingSpinner";
+import { AxiosError } from "axios";
 
 export default function TaskList() {
   const {
@@ -34,11 +35,12 @@ export default function TaskList() {
 
   useEffect(() => {
     if (error) {
+      console.log(error);
       setErrorModal({
         show: true,
         message:
-          error instanceof Error
-            ? error.message
+          error instanceof AxiosError
+            ? error.response?.data
             : "An unexpected error occurred while fetching tasks",
       });
     }
