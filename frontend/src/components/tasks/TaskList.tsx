@@ -1,129 +1,213 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-
-interface Task {
-  id: string;
-  title: string;
-  completed: boolean;
-  priority: "low" | "medium" | "high";
-  dueDate?: string;
-}
+import { Checkbox } from "@/components/ui/Checkbox";
+import { ErrorModal } from "@/components/common/ErrorModal";
+import { TaskModal } from "@/components/common/TaskModal";
+import { Task } from "@task-app/shared";
+import { useTasks } from "../../hooks/useTasks";
+import { LoadingSpinner } from "../common/LoadingSpinner";
+import { AxiosError } from "axios";
 
 export default function TaskList() {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "1",
-      title: "Complete project proposal",
-      completed: false,
-      priority: "high",
-      dueDate: "2023-06-30",
-    },
-    { id: "2", title: "Buy groceries", completed: true, priority: "low" },
-    {
-      id: "3",
-      title: "Prepare for meeting",
-      completed: false,
-      priority: "medium",
-      dueDate: "2023-06-25",
-    },
-  ]);
-  const [newTask, setNewTask] = useState("");
+  const {
+    tasks = [],
+    isLoading,
+    error,
+    createTask,
+    updateTask,
+    deleteTask,
+    isCreating,
+    isUpdating,
+    isDeleting,
+  } = useTasks();
 
-  const addTask = () => {
-    if (newTask.trim() !== "") {
-      const task: Task = {
-        id: Date.now().toString(),
-        title: newTask,
-        completed: false,
-        priority: "medium",
-      };
-      setTasks([...tasks, task]);
-      setNewTask("");
+  const [newTask, setNewTask] = useState("");
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>();
+  const [modalType, setModalType] = useState<"edit" | "delete" | null>(null);
+  const [errorModal, setErrorModal] = useState<{
+    show: boolean;
+    message?: string;
+  }>({
+    show: false,
+  });
+
+  useEffect(() => {
+    if (error) {
+      console.log(error);
+      setErrorModal({
+        show: true,
+        message:
+          error instanceof AxiosError
+            ? error.response?.data
+            : "An unexpected error occurred while fetching tasks",
+      });
+    }
+  }, [error]);
+
+  const handleAddTask = () => {
+    if (!newTask.trim()) return;
+
+    createTask({
+      title: newTask.trim(),
+      status: "TODO",
+      priority: "MEDIUM",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    setNewTask("");
+  };
+
+  const handleEditTask = (taskToUpdate?: Task) => {
+    if (taskToUpdate) {
+      updateTask({
+        ...taskToUpdate,
+        updatedAt: new Date(),
+      });
+      setModalType(null);
+      setSelectedTask(undefined);
     }
   };
 
-  const toggleTask = (id: string) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const handleDeleteTask = (taskToDelete?: Task) => {
+    if (taskToDelete) {
+      deleteTask(taskToDelete.id);
+      setModalType(null);
+      setSelectedTask(undefined);
+    }
   };
 
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  const handleStatusChange = (task: Task) => {
+    updateTask({
+      ...task,
+      status: task.status === "COMPLETED" ? "TODO" : "COMPLETED",
+      updatedAt: new Date(),
+    });
   };
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Task Management</h1>
-      <div className="flex flex-col sm:flex-row mb-4 gap-2">
+    <div className="space-y-6">
+      <ErrorModal
+        open={errorModal.show}
+        onClose={() => setErrorModal({ show: false })}
+        error={errorModal.message}
+      />
+
+      <div className="flex flex-col sm:flex-row gap-4">
         <Input
           type="text"
-          placeholder="Add a new task"
+          placeholder="Add a new task..."
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
           className="flex-grow"
+          disabled={isCreating}
         />
-        <Button onClick={addTask} className="w-full sm:w-auto">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Task
+        <Button
+          onClick={handleAddTask}
+          className="whitespace-nowrap"
+          disabled={isCreating}
+        >
+          <PlusCircle className="w-5 h-5 mr-2" />
+          {isCreating ? "Adding..." : "Add Task"}
         </Button>
       </div>
-      <ul className="space-y-2">
-        {tasks.map((task) => (
-          <li
-            key={task.id}
-            className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg shadow"
-          >
-            <div className="flex items-center mb-2 sm:mb-0">
+
+      <div className="grid gap-4">
+        {Array.isArray(tasks) ? (
+          tasks.map((task) => (
+            <div
+              key={task.id}
+              className="bg-white p-4 rounded-lg shadow-sm border flex items-center gap-4 flex-wrap sm:flex-nowrap"
+            >
               <Checkbox
-                id={`task-${task.id}`}
-                checked={task.completed}
-                onCheckedChange={() => toggleTask(task.id)}
+                checked={task.status === "COMPLETED"}
+                onCheckedChange={() => handleStatusChange(task)}
+                disabled={isUpdating}
               />
-              <label
-                htmlFor={`task-${task.id}`}
-                className={`ml-2 ${
-                  task.completed ? "line-through text-gray-500" : ""
-                }`}
-              >
-                {task.title}
-              </label>
+
+              <div className="flex-grow min-w-[200px]">
+                <p
+                  className={
+                    task.status === "COMPLETED"
+                      ? "line-through text-gray-500"
+                      : ""
+                  }
+                >
+                  {task.title}
+                </p>
+                <div className="flex gap-2 mt-2 text-sm text-gray-500">
+                  <span className="capitalize">
+                    {task.priority.toLowerCase()}
+                  </span>
+                  {task.dueDate && (
+                    <span>
+                      · Due: {new Date(task.dueDate).toLocaleDateString()}
+                    </span>
+                  )}
+                  {task.description && <span>· {task.description}</span>}
+                  {task.tags && task.tags.length > 0 && (
+                    <span>· Tags: {task.tags.join(", ")}</span>
+                  )}
+                  {task.assignedTo && (
+                    <span>· Assigned to: {task.assignedTo}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-2 ml-auto">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setModalType("edit");
+                  }}
+                  disabled={isUpdating}
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setModalType("delete");
+                  }}
+                  disabled={isDeleting}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={`px-2 py-1 text-xs rounded ${
-                  task.priority === "high"
-                    ? "bg-red-200 text-red-800"
-                    : task.priority === "medium"
-                    ? "bg-yellow-200 text-yellow-800"
-                    : "bg-green-200 text-green-800"
-                }`}
-              >
-                {task.priority}
-              </span>
-              {task.dueDate && (
-                <span className="text-sm text-gray-500">
-                  Due: {task.dueDate}
-                </span>
-              )}
-              <Button variant="outline" size="icon">
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => deleteTask(task.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
+          ))
+        ) : (
+          <div className="bg-white p-4 rounded-lg shadow-sm border flex items-center gap-4 flex-wrap sm:flex-nowrap">
+            No tasks available
+          </div>
+        )}
+
+        {tasks.length === 0 && !isLoading && (
+          <div className="text-center p-8 text-gray-500">
+            No tasks yet. Add your first task above!
+          </div>
+        )}
+      </div>
+
+      <TaskModal
+        open={!!modalType}
+        onClose={() => {
+          setModalType(null);
+          setSelectedTask(undefined);
+        }}
+        mode={modalType || "edit"}
+        task={selectedTask}
+        onConfirm={modalType === "delete" ? handleDeleteTask : handleEditTask}
+      />
     </div>
   );
 }
