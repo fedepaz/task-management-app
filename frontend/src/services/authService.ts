@@ -14,6 +14,7 @@ export const authService = {
       credentials,
       { withCredentials: true }
     );
+    console.log(response);
     return response.data;
   },
 

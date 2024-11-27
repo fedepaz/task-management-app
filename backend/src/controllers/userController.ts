@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/userService";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-const SECRET = process.env.SECRET as string;
+dotenv.config();
+
+const SECRET = process.env.JWT_SECRET as string;
 
 export class UserController {
   private userService: UserService;
