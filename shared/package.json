@@ -10,14 +10,15 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "devDependencies": {
-    "typescript": "^5.x",
-    "@types/node": "^22.9.0"
+    "@types/node": "^22.9.0",
+    "typescript": "^5.x"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@auth/core": "^0.37.4",
+    "prisma": "^5.22.0",
     "zod": "^3.x"
   }
 }

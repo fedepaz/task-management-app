@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { configureSecurityMiddleware } from "./middlewares/securityMiddleware";
 import taskRoutes from "./routes/taskRoutes";
 import errorHandler from "./middlewares/errorHandler";
+import userRoutes from "./routes/userRoutes";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+app.use("/api/auth", userRoutes);
 app.use("/api/tasks", taskRoutes);
 
 app.use(errorHandler);

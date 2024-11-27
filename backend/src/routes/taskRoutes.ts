@@ -1,8 +1,9 @@
 import express from "express";
-import * as taskController from "../controllers/taskController";
+import { TaskController } from "../controllers/taskController";
 import authMiddleware from "../middlewares/authMiddleware";
 
 const taskRoutes = express.Router();
+const taskController = new TaskController();
 
 taskRoutes.use(authMiddleware);
 

@@ -1,60 +1,57 @@
-import { NextFunction } from "express";
-import Task from "../models/Task";
+import { NextFunction, Request, Response } from "express";
+import { TaskService } from "../services/taskService";
 
-export const createTask = async (req: any, res: any, next: NextFunction) => {
-  try {
-    const task = new Task({
-      ...req.body,
-      user: req.user.id,
-    });
+export class TaskController {
+  private taskService: TaskService;
 
-    const savedTask = await task.save();
-    res.status(201).json(savedTask);
-  } catch (error) {
-    next(error);
+  constructor() {
+    this.taskService = new TaskService();
   }
-};
 
-export const getTasks = async (req: any, res: any, next: NextFunction) => {
-  try {
-    const tasks = await Task.find({ user: req.user.id });
-    res.json(tasks);
-  } catch (error) {
-    next(error);
-  }
-};
+  createTask = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const task = await this.taskService.createTask(req.body);
 
-export const updateTask = async (req: any, res: any, next: NextFunction) => {
-  try {
-    const task = await Task.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
-      req.body,
-      { new: true }
-    );
-
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
+      res.status(201).json({
+        message: "Task created successfully",
+        task,
+      });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    res.json(task);
-  } catch (error) {
-    next(error);
-  }
-};
+  getTasks = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const tasks = await this.taskService.getTasks(req);
 
-export const deleteTask = async (req: any, res: any, next: NextFunction) => {
-  try {
-    const task = await Task.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user.id,
-    });
-
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
+      res.status(200).json(tasks);
+    } catch (error) {
+      next(error);
     }
+  };
 
-    res.status(204).send();
-  } catch (error) {
-    next(error);
-  }
-};
+  updateTask = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const task = await this.taskService.updateTask(
+        req,
+        req.params.id,
+        req.body
+      );
+
+      res.status(200).json(task);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteTask = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.taskService.deleteTask(req, req.params.id);
+
+      res.status(200).json({ message: "Task deleted successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
+}
