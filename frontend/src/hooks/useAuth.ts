@@ -1,4 +1,4 @@
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/authService";
 import { AuthUser } from "@task-app/shared";
 import { useState } from "react";
@@ -11,6 +11,7 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
+      console.log("Login Success - Response:", data);
       setUser(data.user);
       setError(null);
     },
