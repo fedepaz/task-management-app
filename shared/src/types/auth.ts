@@ -22,3 +22,7 @@ export interface RegisterCredentials extends LoginCredentials {
   name: string;
   confirmPassword: string;
 }
+export interface SessionResponse {
+  authenticated: boolean;
+  user: AuthUser | null;
+}

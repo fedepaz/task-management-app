@@ -7,6 +7,30 @@ import { AxiosError } from "axios";
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  const checkInitialAuth = async () => {
+    try {
+      setIsAuthChecking(true);
+      const response = await authService.getCurrentUser();
+      console.log("Initial Auth Check - Response:", response);
+      if (response.authenticated && response.user) {
+        setUser(response.user);
+      } else {
+        setUser(null);
+      }
+    } catch (error) {
+      console.log("Initial Auth Check - No User");
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.response?.data?.message
+          : "Ocurrió un error inesperado";
+      setError(errorMessage);
+      setUser(null);
+    } finally {
+      setIsAuthChecking(false);
+    }
+  };
 
   const loginMutation = useMutation({
     mutationFn: authService.login,
@@ -54,6 +78,8 @@ export const useAuth = () => {
     login: loginMutation.mutate,
     register: registerMutation.mutate,
     logout,
+    checkAuth: checkInitialAuth,
     isLoading: loginMutation.isPending || registerMutation.isPending,
+    isAuthChecking,
   };
 };

@@ -3,6 +3,7 @@ import {
   LoginCredentials,
   RegisterCredentials,
   AuthUser,
+  SessionResponse,
 } from "@task-app/shared";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -24,6 +25,13 @@ export const authService = {
       `${API_URL}/auth/register`,
       credentials
     );
+    return response.data;
+  },
+  async getCurrentUser() {
+    const response = await axios.get<SessionResponse>(`${API_URL}/session`, {
+      withCredentials: true,
+    });
+    console.log("Get Current User Response:", response.data);
     return response.data;
   },
 };

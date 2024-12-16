@@ -12,22 +12,25 @@ import Profile from "./pages/Profile";
 import AuthPage from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
 import { LoadingSpinner } from "./components/common/LoadingSpinner";
+import { useEffect } from "react";
 
 function ProtectedRoute() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, checkAuth, isAuthChecking } = useAuth();
   console.log("Protected Route - User:", user);
   console.log("Protected Route - Loading:", isLoading);
 
-  if (isLoading) {
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  if (isAuthChecking || isLoading) {
     return <LoadingSpinner />;
   }
 
   if (!user) {
-    console.log("No user - Redirecting to /auth");
     return <Navigate to="/auth" replace />;
   }
 
-  console.log("User exists - Rendering Outlet");
   return <Outlet />;
 }
 

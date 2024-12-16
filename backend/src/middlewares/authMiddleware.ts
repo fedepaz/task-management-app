@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 const authMiddleware = (req: any, res: any, next: any) => {
-  const token = req.cookies.token;
+  const token = req.cookies.access_token;
   if (!token) return res.status(401).send("Unauthorized");
 
   jwt.verify(token, process.env.JWT_SECRET as string, (err: any, user: any) => {
