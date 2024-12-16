@@ -35,7 +35,6 @@ export class UserService {
       email: newUser.email,
       name: newUser.name,
       role: newUser.role,
-      emailVerified: false,
     };
   }
 
@@ -49,7 +48,7 @@ export class UserService {
 
     const isValidPassword = await bcrypt.compare(
       validatedData.password,
-      await bcrypt.hash(validatedData.password, 10)
+      user.passwordHash
     );
 
     if (!isValidPassword) {
@@ -61,7 +60,26 @@ export class UserService {
       email: user.email,
       name: user.name,
       role: user.role,
-      emailVerified: false,
     };
+  }
+
+  async validateSession(userId: string): Promise<AuthUser | null> {
+    try {
+      const user = await UserModel.findById(userId).select("-passwordHash");
+
+      if (!user) {
+        return null;
+      }
+
+      return {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      };
+    } catch (error) {
+      console.error("Session validation error:", error);
+      return null;
+    }
   }
 }
