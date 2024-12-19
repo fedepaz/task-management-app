@@ -13,7 +13,6 @@ export const useTasks = () => {
     queryKey: ["tasks"],
     queryFn: () => taskService.getTasks().then((res) => res.data),
   });
-
   const createTaskMutation = useMutation({
     mutationFn: taskService.createTask,
     onSuccess: () => {

@@ -16,8 +16,10 @@ export const useAuth = () => {
       console.log("Initial Auth Check - Response:", response);
       if (response.authenticated && response.user) {
         setUser(response.user);
+        return true;
       } else {
         setUser(null);
+        return false;
       }
     } catch (error) {
       console.log("Initial Auth Check - No User");
@@ -35,7 +37,6 @@ export const useAuth = () => {
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
-      console.log("Login Success - Response:", data);
       setUser(data.user);
       setError(null);
     },
@@ -67,7 +68,7 @@ export const useAuth = () => {
     },
   });
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     setError(null);
   };

@@ -16,11 +16,13 @@ import { useEffect } from "react";
 
 function ProtectedRoute() {
   const { user, isLoading, checkAuth, isAuthChecking } = useAuth();
-  console.log("Protected Route - User:", user);
-  console.log("Protected Route - Loading:", isLoading);
 
   useEffect(() => {
-    checkAuth();
+    const checkSession = async () => {
+      const isAuthenticated = await checkAuth();
+      // Navigation is handled by the router based on the user state
+    };
+    checkSession();
   }, []);
 
   if (isAuthChecking || isLoading) {
@@ -34,10 +36,20 @@ function ProtectedRoute() {
   return <Outlet />;
 }
 
+function AuthRoute() {
+  const { user } = useAuth();
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <AuthPage />;
+}
+
 const router = createBrowserRouter([
   {
     path: "/auth",
-    element: <AuthPage />,
+    element: <AuthRoute />,
   },
   {
     path: "/",

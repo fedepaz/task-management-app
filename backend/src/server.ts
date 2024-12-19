@@ -12,10 +12,10 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-configureSecurityMiddleware(app);
 app.use(express.json());
 app.use(cookieParser());
+
+configureSecurityMiddleware(app);
 
 mongoose
   .connect(process.env.MONGODB_URI as string)

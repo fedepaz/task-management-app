@@ -38,10 +38,12 @@ export class UserController {
         .cookie("access_token", token, {
           httpOnly: true,
           maxAge: 86400000,
-          sameSite: "none",
-          secure: true,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
         })
-        .send({ user, token });
+        .status(200)
+        .json({ user, token });
     } catch (error) {
       next(error);
     }
