@@ -36,7 +36,6 @@ export function TaskModal({
 }: TaskModalProps) {
   const [editedTask, setEditedTask] = useState<Task | undefined>(task);
 
-  // Reset form when task changes
   useEffect(() => {
     setEditedTask(task);
   }, [task]);
@@ -46,7 +45,6 @@ export function TaskModal({
     onClose();
   };
 
-  // For multi-tag input
   const handleTagsChange = (value: string) => {
     if (!editedTask) return;
     const tags = value

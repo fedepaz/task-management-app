@@ -3,8 +3,10 @@ import { authService } from "../services/authService";
 import { AuthUser } from "@task-app/shared";
 import { useState } from "react";
 import { AxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
 
 export const useAuth = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
@@ -13,16 +15,15 @@ export const useAuth = () => {
     try {
       setIsAuthChecking(true);
       const response = await authService.getCurrentUser();
-      console.log("Initial Auth Check - Response:", response);
       if (response.authenticated && response.user) {
         setUser(response.user);
+        navigate("/");
         return true;
       } else {
         setUser(null);
         return false;
       }
     } catch (error) {
-      console.log("Initial Auth Check - No User");
       const errorMessage =
         error instanceof AxiosError
           ? error.response?.data?.message
@@ -38,6 +39,7 @@ export const useAuth = () => {
     mutationFn: authService.login,
     onSuccess: (data) => {
       setUser(data.user);
+      navigate("/");
       setError(null);
     },
     onError: (error) => {
@@ -55,6 +57,7 @@ export const useAuth = () => {
     mutationFn: authService.register,
     onSuccess: (data) => {
       setUser(data.user);
+      navigate("/");
       setError(null);
     },
     onError: (error) => {
@@ -70,6 +73,7 @@ export const useAuth = () => {
 
   const logout = async () => {
     setUser(null);
+    navigate("/auth");
     setError(null);
   };
 

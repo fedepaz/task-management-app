@@ -19,9 +19,13 @@ function ProtectedRoute() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const isAuthenticated = await checkAuth();
-      // Navigation is handled by the router based on the user state
+      try {
+        await checkAuth();
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+      }
     };
+
     checkSession();
   }, []);
 
@@ -30,17 +34,24 @@ function ProtectedRoute() {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return (
+      <Navigate to="/auth" replace state={{ from: window.location.pathname }} />
+    );
   }
 
   return <Outlet />;
 }
 
 function AuthRoute() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    const from = window.location.origin || "/";
+    return <Navigate to={from} replace />;
   }
 
   return <AuthPage />;
@@ -71,7 +82,14 @@ const router = createBrowserRouter([
   },
 ]);
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (

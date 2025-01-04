@@ -15,8 +15,7 @@ export const authService = {
       credentials,
       { withCredentials: true }
     );
-    console.log("Login Service - Full Response:", response);
-    console.log("Login Service - User:", response.data.user);
+
     return response.data;
   },
 
@@ -31,7 +30,6 @@ export const authService = {
     const response = await axios.get<SessionResponse>(`${API_URL}/session`, {
       withCredentials: true,
     });
-    console.log("Get Current User Response:", response.data);
     return response.data;
   },
 };

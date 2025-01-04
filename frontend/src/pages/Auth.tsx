@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { ErrorModal } from "@/components/common/ErrorModal";
 import { LoginCredentials, RegisterCredentials } from "@task-app/shared";
-import { AxiosError } from "axios";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 export default function AuthPage() {
