@@ -1,89 +1,67 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authService } from "../services/authService";
-import { AuthUser } from "@task-app/shared";
-import { useState } from "react";
+import { LoginCredentials, RegisterCredentials } from "@task-app/shared";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
+import { error } from "console";
 
 export const useAuth = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const queryClient = useQueryClient();
 
-  const checkInitialAuth = async () => {
-    try {
-      setIsAuthChecking(true);
-      const response = await authService.getCurrentUser();
-      if (response.authenticated && response.user) {
-        setUser(response.user);
-        navigate("/");
-        return true;
-      } else {
-        setUser(null);
-        return false;
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof AxiosError
-          ? error.response?.data?.message
-          : "Ocurrió un error inesperado";
-      setError(errorMessage);
-      setUser(null);
-    } finally {
-      setIsAuthChecking(false);
-    }
-  };
+  const { data: sessionData, isLoading: isAuthChecking } = useQuery({
+    queryKey: ["session"],
+    queryFn: authService.getCurrentUser,
+    retry: false,
+    staleTime: 45 * 60 * 1000,
+  });
 
   const loginMutation = useMutation({
-    mutationFn: authService.login,
+    mutationFn: (credentials: LoginCredentials) =>
+      authService.login(credentials),
     onSuccess: (data) => {
-      setUser(data.user);
+      queryClient.invalidateQueries({ queryKey: ["session"] });
       navigate("/");
-      setError(null);
+      return data;
     },
-    onError: (error) => {
-      setUser(null);
+    onError: (error: Error) => {
       const errorMessage =
         error instanceof AxiosError
           ? error.response?.data?.message
           : "Ocurrió un error inesperado";
-      setError(errorMessage);
       return errorMessage;
     },
   });
 
   const registerMutation = useMutation({
-    mutationFn: authService.register,
+    mutationFn: (credentials: RegisterCredentials) =>
+      authService.register(credentials),
     onSuccess: (data) => {
-      setUser(data.user);
+      queryClient.invalidateQueries({ queryKey: ["session"] });
       navigate("/");
-      setError(null);
+      return data;
     },
-    onError: (error) => {
-      setUser(null);
+    onError: (error: Error) => {
       const errorMessage =
         error instanceof AxiosError
           ? error.response?.data?.message
           : "Ocurrió un error inesperado";
-      setError(errorMessage);
       return errorMessage;
     },
   });
 
   const logout = async () => {
-    setUser(null);
+    queryClient.setQueryData(["session"], { authenticated: false, user: null });
+    queryClient.invalidateQueries({ queryKey: ["session"] });
     navigate("/auth");
-    setError(null);
   };
 
   return {
-    user,
-    error,
+    user: sessionData?.authenticated ? sessionData.user : null,
+    error: loginMutation.error || registerMutation.error,
     login: loginMutation.mutate,
     register: registerMutation.mutate,
     logout,
-    checkAuth: checkInitialAuth,
     isLoading: loginMutation.isPending || registerMutation.isPending,
     isAuthChecking,
   };

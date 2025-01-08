@@ -15,19 +15,7 @@ import { LoadingSpinner } from "./components/common/LoadingSpinner";
 import { useEffect } from "react";
 
 function ProtectedRoute() {
-  const { user, isLoading, checkAuth, isAuthChecking } = useAuth();
-
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        await checkAuth();
-      } catch (error) {
-        console.error("Error checking authentication:", error);
-      }
-    };
-
-    checkSession();
-  }, []);
+  const { user, isLoading, isAuthChecking } = useAuth();
 
   if (isAuthChecking || isLoading) {
     return <LoadingSpinner />;

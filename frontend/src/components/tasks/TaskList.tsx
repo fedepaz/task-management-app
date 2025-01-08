@@ -9,6 +9,7 @@ import { Task } from "@task-app/shared";
 import { useTasks } from "../../hooks/useTasks";
 import { LoadingSpinner } from "../common/LoadingSpinner";
 import { AxiosError } from "axios";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function TaskList() {
   const {
@@ -22,6 +23,8 @@ export default function TaskList() {
     isUpdating,
     isDeleting,
   } = useTasks();
+
+  const { user: sessionUser } = useAuth();
 
   const [newTask, setNewTask] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | undefined>();
@@ -48,6 +51,7 @@ export default function TaskList() {
 
   const handleAddTask = () => {
     if (!newTask.trim()) return;
+    const objecId = { user: sessionUser?.id };
 
     createTask({
       title: newTask.trim(),
@@ -55,7 +59,9 @@ export default function TaskList() {
       priority: "MEDIUM",
       createdAt: new Date(),
       updatedAt: new Date(),
+      user: objecId,
     });
+    console.log(objecId);
     setNewTask("");
   };
 
@@ -97,10 +103,14 @@ export default function TaskList() {
         onClose={() => setErrorModal({ show: false })}
         error={errorModal.message}
       />
+      <h1 className="text-center text-lg">
+        {sessionUser?.name.toLowerCase()}'s Tasks
+      </h1>
 
       <div className="flex flex-col sm:flex-row gap-4">
         <Input
           type="text"
+          id="newTask"
           placeholder="Add a new task..."
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
@@ -210,4 +220,7 @@ export default function TaskList() {
       />
     </div>
   );
+}
+function checkAuth() {
+  throw new Error("Function not implemented.");
 }
