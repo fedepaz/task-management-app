@@ -1,9 +1,18 @@
+import { Types } from "mongoose";
 import { TaskModel } from "../models/Task";
 import { Task } from "@task-app/shared/src/types/task";
 
 export class TaskService {
   async createTask(taskData: Partial<Task>): Promise<Task> {
-    const newTask = new TaskModel(taskData);
+    const userId =
+      typeof taskData.user === "object"
+        ? (taskData.user as any).user
+        : taskData.user;
+
+    const newTask = new TaskModel({
+      ...taskData,
+      user: new Types.ObjectId(userId),
+    });
     const savedTask = await newTask.save();
 
     return savedTask;
