@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/input";
+
 import { Checkbox } from "@/components/ui/Checkbox";
 import { ErrorModal } from "@/components/common/ErrorModal";
 import { TaskModal } from "@/components/common/TaskModal";
@@ -23,12 +23,14 @@ export default function TaskList() {
     isUpdating,
     isDeleting,
   } = useTasks();
+  console.log(tasks);
 
   const { user: sessionUser } = useAuth();
 
-  const [newTask, setNewTask] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | undefined>();
-  const [modalType, setModalType] = useState<"edit" | "delete" | null>(null);
+  const [modalType, setModalType] = useState<
+    "edit" | "delete" | "create" | null
+  >(null);
   const [errorModal, setErrorModal] = useState<{
     show: boolean;
     message?: string;
@@ -38,7 +40,6 @@ export default function TaskList() {
 
   useEffect(() => {
     if (error) {
-      console.log(error);
       setErrorModal({
         show: true,
         message:
@@ -49,20 +50,16 @@ export default function TaskList() {
     }
   }, [error]);
 
-  const handleAddTask = () => {
-    if (!newTask.trim()) return;
-    const objecId = { user: sessionUser?.id };
-
-    createTask({
-      title: newTask.trim(),
-      status: "TODO",
-      priority: "MEDIUM",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      user: objecId,
-    });
-    console.log(objecId);
-    setNewTask("");
+  const handleCreateTask = (newTask?: Task) => {
+    if (newTask) {
+      const taskWithUser = {
+        ...newTask,
+        user: { user: sessionUser?.id },
+        createdAt: new Date(),
+        updatetAt: new Date(),
+      };
+      createTask(taskWithUser);
+    }
   };
 
   const handleEditTask = (taskToUpdate?: Task) => {
@@ -108,17 +105,8 @@ export default function TaskList() {
       </h1>
 
       <div className="flex flex-col sm:flex-row gap-4">
-        <Input
-          type="text"
-          id="newTask"
-          placeholder="Add a new task..."
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          className="flex-grow"
-          disabled={isCreating}
-        />
         <Button
-          onClick={handleAddTask}
+          onClick={() => setModalType("create")}
           className="whitespace-nowrap"
           disabled={isCreating}
         >
@@ -214,13 +202,25 @@ export default function TaskList() {
           setModalType(null);
           setSelectedTask(undefined);
         }}
-        mode={modalType || "edit"}
-        task={selectedTask}
-        onConfirm={modalType === "delete" ? handleDeleteTask : handleEditTask}
+        mode={modalType === "create" ? "edit" : modalType || "edit"}
+        task={
+          modalType === "create"
+            ? ({
+                title: "",
+                status: "TODO",
+                priority: "MEDIUM",
+                user: { user: sessionUser?.id },
+              } as Task)
+            : selectedTask
+        }
+        onConfirm={
+          modalType === "delete"
+            ? handleDeleteTask
+            : modalType === "create"
+              ? handleCreateTask
+              : handleEditTask
+        }
       />
     </div>
   );
-}
-function checkAuth() {
-  throw new Error("Function not implemented.");
 }

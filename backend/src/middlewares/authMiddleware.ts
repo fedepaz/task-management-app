@@ -6,7 +6,12 @@ const authMiddleware = (req: any, res: any, next: any) => {
 
   jwt.verify(token, process.env.JWT_SECRET as string, (err: any, user: any) => {
     if (err) return res.sendStatus(403);
-    req.user = user;
+    req.user = {
+      name: user.name,
+      id: user.userId,
+      iat: user.iat,
+      exp: user.exp,
+    };
     next();
   });
 };
