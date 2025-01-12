@@ -25,7 +25,7 @@ export default function AuthPage() {
     if (error) {
       setErrorModal({
         show: true,
-        message: error,
+        message: error.message,
       });
     }
   }, [error]);

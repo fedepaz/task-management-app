@@ -3,7 +3,6 @@ import { authService } from "../services/authService";
 import { LoginCredentials, RegisterCredentials } from "@task-app/shared";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
-import { error } from "console";
 
 export const useAuth = () => {
   const navigate = useNavigate();

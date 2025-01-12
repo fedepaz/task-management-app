@@ -12,7 +12,6 @@ import Profile from "./pages/Profile";
 import AuthPage from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
 import { LoadingSpinner } from "./components/common/LoadingSpinner";
-import { useEffect } from "react";
 
 function ProtectedRoute() {
   const { user, isLoading, isAuthChecking } = useAuth();
