@@ -198,13 +198,21 @@ export default function TaskList() {
             </div>
           ))
         ) : (
-          <div className="bg-white p-4 rounded-lg shadow-sm border flex items-center gap-4 flex-wrap sm:flex-nowrap">
+          <div
+            id="noTaskAvailableId"
+            key={"noTaskAvailableKey"}
+            className="bg-white p-4 rounded-lg shadow-sm border flex items-center gap-4 flex-wrap sm:flex-nowrap"
+          >
             No tasks available
           </div>
         )}
 
         {tasks.length === 0 && !isLoading && (
-          <div className="text-center p-8 text-gray-500">
+          <div
+            id="noTaskYetId"
+            key={"noTaskYetKey"}
+            className="text-center p-8 text-gray-500"
+          >
             No tasks yet. Add your first task above!
           </div>
         )}

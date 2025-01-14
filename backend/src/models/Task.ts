@@ -22,4 +22,12 @@ const taskSchema = new Schema<Task>({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });
 
+taskSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+  },
+});
+
 export const TaskModel = model("Task", taskSchema);
