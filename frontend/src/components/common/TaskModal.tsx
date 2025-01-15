@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Task } from "@task-app/shared";
+import { TagAutoComplete } from "../common/TagAutoComplete";
 
 interface TaskModalProps {
   open: boolean;
@@ -45,13 +46,39 @@ export function TaskModal({
     onClose();
   };
 
-  const handleTagsChange = (value: string) => {
+  const handleDueDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editedTask) return;
-    const tags = value
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag);
-    setEditedTask((prev) => (prev ? { ...prev, tags } : prev));
+
+    const date = e.target.value ? new Date(e.target.value) : undefined;
+
+    setEditedTask((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        dueDate: date,
+      };
+    });
+  };
+
+  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editedTask) {
+      setEditedTask({
+        ...task,
+        tags: e.target.value
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      } as Task);
+      return;
+    }
+
+    setEditedTask({
+      ...editedTask,
+      tags: e.target.value
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    });
   };
 
   if (mode === "delete") {
@@ -83,6 +110,11 @@ export function TaskModal({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{task ? "Edit Task" : "Create Task"}</DialogTitle>
+          <DialogDescription>
+            {task
+              ? "Edit the details of your task below."
+              : "Fill in the details for your new task."}
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -131,7 +163,7 @@ export function TaskModal({
                   )
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger id="status">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -154,7 +186,7 @@ export function TaskModal({
                   )
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger id="priority">
                   <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,11 +211,7 @@ export function TaskModal({
                     ? new Date(editedTask.dueDate).toISOString().slice(0, 16)
                     : ""
                 }
-                onChange={(e) =>
-                  setEditedTask((prev) =>
-                    prev ? { ...prev, dueDate: new Date(e.target.value) } : prev
-                  )
-                }
+                onChange={handleDueDateChange}
               />
             </div>
 
@@ -208,11 +236,13 @@ export function TaskModal({
             <label htmlFor="tags" className="text-sm font-medium">
               Tags
             </label>
-            <Input
-              id="tags"
-              value={editedTask?.tags?.join(", ") ?? ""}
-              onChange={(e) => handleTagsChange(e.target.value)}
-              placeholder="Enter tags separated by commas"
+            <TagAutoComplete
+              selectedTagIds={editedTask?.tags ?? []}
+              onTagsChange={(tagIds) =>
+                setEditedTask((prev) =>
+                  prev ? { ...prev, tags: tagIds } : prev
+                )
+              }
             />
           </div>
         </div>

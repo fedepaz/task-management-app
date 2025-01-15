@@ -1,3 +1,4 @@
+import { Tag } from "./tag";
 export interface Task {
   id: string;
   title: string;
@@ -5,7 +6,7 @@ export interface Task {
   priority: "LOW" | "MEDIUM" | "HIGH";
   dueDate?: Date;
   status: "TODO" | "IN_PROGRESS" | "COMPLETED";
-  tags?: string[];
+  tags?: Tag["id"][];
   assignedTo?: string;
   createdAt: Date;
   updatedAt: Date;

@@ -7,6 +7,7 @@ import taskRoutes from "./routes/taskRoutes";
 import errorHandler from "./middlewares/errorHandler";
 import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
+import tagsRoutes from "./routes/tagsRoutes";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ mongoose
 app.use("/api", authRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/tags", tagsRoutes);
 
 app.use(errorHandler);
 
