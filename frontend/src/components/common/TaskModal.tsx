@@ -60,27 +60,6 @@ export function TaskModal({
     });
   };
 
-  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!editedTask) {
-      setEditedTask({
-        ...task,
-        tags: e.target.value
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
-      } as Task);
-      return;
-    }
-
-    setEditedTask({
-      ...editedTask,
-      tags: e.target.value
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-    });
-  };
-
   if (mode === "delete") {
     return (
       <Dialog open={open} onOpenChange={onClose}>
@@ -237,7 +216,7 @@ export function TaskModal({
               Tags
             </label>
             <TagAutoComplete
-              selectedTagIds={editedTask?.tags ?? []}
+              selectedTags={editedTask?.tags ?? []}
               onTagsChange={(tagIds) =>
                 setEditedTask((prev) =>
                   prev ? { ...prev, tags: tagIds } : prev

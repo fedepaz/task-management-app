@@ -1,20 +1,14 @@
 import { useEffect, useState } from "react";
-import { PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Checkbox } from "@/components/ui/Checkbox";
 import { ErrorModal } from "@/components/common/ErrorModal";
 import { TaskModal } from "@/components/common/TaskModal";
 import { Task } from "@task-app/shared";
 import { useTasks } from "../../hooks/useTasks";
 import { LoadingSpinner } from "../common/LoadingSpinner";
-import { AxiosError } from "axios";
 import { useAuth } from "@/hooks/useAuth";
-
-const priorityColors = {
-  LOW: "bg-blue-100 text-blue-800",
-  MEDIUM: "bg-yellow-100 text-yellow-800",
-  HIGH: "bg-red-100 text-red-800",
-};
+import { AxiosError } from "axios";
+import { TaskCard } from "./TaskCard";
 
 export default function TaskList() {
   const {
@@ -122,80 +116,21 @@ export default function TaskList() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.isArray(tasks) && tasks.length > 0 ? (
           tasks.map((task) => (
-            <div
+            <TaskCard
               key={task.id}
-              className={`bg-white p-4 rounded-lg shadow-sm border flex flex-col ${
-                task.status === "COMPLETED" ? "opacity-60" : ""
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span
-                  className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                    priorityColors[task.priority as keyof typeof priorityColors]
-                  }`}
-                >
-                  {task.priority}
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedTask(task);
-                      setModalType("edit");
-                    }}
-                    disabled={isUpdating}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelectedTask(task);
-                      setModalType("delete");
-                    }}
-                    disabled={isDeleting}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <h3
-                className={`text-lg font-semibold mb-2 ${
-                  task.status === "COMPLETED"
-                    ? "line-through text-gray-500"
-                    : ""
-                }`}
-              >
-                {task.title}
-              </h3>
-
-              <div className="flex-grow space-y-2 text-sm text-gray-600">
-                {task.description && <p>{task.description}</p>}
-                {task.dueDate && (
-                  <p>Due: {new Date(task.dueDate).toLocaleDateString()}</p>
-                )}
-                {task.tags && task.tags.length > 0 && (
-                  <p>Tags: {task.tags.join(", ")}</p>
-                )}
-                {task.assignedTo && <p>Assigned to: {task.assignedTo}</p>}
-              </div>
-
-              <div className="mt-4 flex items-center">
-                <Checkbox
-                  checked={task.status === "COMPLETED"}
-                  onCheckedChange={() => handleStatusChange(task)}
-                  disabled={isUpdating}
-                />
-                <span className="ml-2 text-sm text-gray-600">
-                  {task.status === "COMPLETED"
-                    ? "Completed"
-                    : "Mark as complete"}
-                </span>
-              </div>
-            </div>
+              task={task}
+              onEdit={(task) => {
+                setSelectedTask(task);
+                setModalType("edit");
+              }}
+              onDelete={(task) => {
+                setSelectedTask(task);
+                setModalType("delete");
+              }}
+              onStatusChange={handleStatusChange}
+              isUpdating={isUpdating}
+              isDeleting={isDeleting}
+            />
           ))
         ) : (
           <div

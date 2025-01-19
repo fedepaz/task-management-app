@@ -9,9 +9,12 @@ const axiosInstance = axios.create({
 
 export const tagService = {
   searchTags: (query: string) =>
-    axiosInstance.get<Tag[]>(`/tags/search?q=${encodeURIComponent(query)}`),
+    axiosInstance.get<Tag[]>(`/tags/search`, { params: { q: query } }),
 
   createTag: (name: string) => axiosInstance.post<Tag>(`/tags`, { name }),
 
   getTags: () => axiosInstance.get<Tag[]>(`/tags`),
+
+  getTagsByIds: (ids: string[]) =>
+    axiosInstance.post<Tag[]>(`/tags/batch`, { ids }),
 };

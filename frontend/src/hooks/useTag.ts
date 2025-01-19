@@ -10,7 +10,6 @@ interface UseTagsReturn {
   error: unknown;
   searchResults: Tag[];
   selectedTags: Tag[];
-  setSelectedTags: (tags: Tag["id"][]) => void;
 }
 
 export const useTags = (
@@ -18,20 +17,17 @@ export const useTags = (
 ): UseTagsReturn => {
   const queryClient = useQueryClient();
 
-  // Query for searching tags
   const {
     data: searchResults = [],
     isLoading: isSearchLoading,
     isError: isSearchError,
     error: searchError,
-    refetch: performSearch,
   } = useQuery({
     queryKey: ["tags", "search"],
-    queryFn: () => Promise.resolve([]), // Initial empty state
-    enabled: false, // Don't run automatically
+    queryFn: () => Promise.resolve([]),
+    enabled: false,
   });
 
-  // Mutation for creating new tags
   const {
     mutateAsync: createTagMutation,
     isPending: isCreateLoading,
@@ -40,11 +36,11 @@ export const useTags = (
   } = useMutation({
     mutationFn: tagService.createTag,
     onSuccess: (newTag) => {
+      console.log("New tag created", newTag);
       queryClient.invalidateQueries({ queryKey: ["tags"] });
     },
   });
 
-  // Query for selected tags details
   const {
     data: selectedTags = [],
     isLoading: isSelectedLoading,
@@ -53,9 +49,9 @@ export const useTags = (
   } = useQuery({
     queryKey: ["tags", "selected", initialSelectedTags],
     queryFn: async () => {
-      if (!initialSelectedTags.length) return [];
-      const allTags = await tagService.getTags();
-      return allTags.data.filter((tag) => initialSelectedTags.includes(tag.id));
+      if (!initialSelectedTags?.length) return Promise.resolve([]);
+      const res = await tagService.getTagsByIds(initialSelectedTags);
+      return res.data;
     },
     enabled: initialSelectedTags.length > 0,
   });
@@ -70,7 +66,6 @@ export const useTags = (
     const response = await createTagMutation(name);
     return response.data;
   };
-
   return {
     searchTags,
     createTag,
@@ -78,9 +73,6 @@ export const useTags = (
     isError: isSearchError || isCreateError || isSelectedError,
     error: searchError || createError || selectedError,
     searchResults,
-    setSelectedTags: (tags) => {
-      queryClient.setQueryData(["tags", "selected"], tags);
-    },
     selectedTags,
   };
 };

@@ -23,5 +23,6 @@ export const configureSecurityMiddleware = (app: any) => {
     credentials: true,
     optionsSuccessStatus: 200,
   };
+  /// corsP
   app.use(cors(corsOptions));
 };
