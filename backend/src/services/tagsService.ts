@@ -33,7 +33,6 @@ export class TagsService {
     const tags = TagModel.find({
       name: { $regex: query, $options: "i" },
     }).limit(10);
-    console.log(tags);
     return tags;
   }
 }
