@@ -36,8 +36,10 @@ export const useTags = (
   } = useMutation({
     mutationFn: tagService.createTag,
     onSuccess: (newTag) => {
-      console.log("New tag created", newTag);
-      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.setQueryData(["tags", "search"], (oldData: Tag[] = []) => [
+        newTag.data,
+        ...oldData,
+      ]);
     },
   });
 
@@ -54,6 +56,7 @@ export const useTags = (
       return res.data;
     },
     enabled: initialSelectedTags.length > 0,
+    staleTime: 1000 * 60 * 5,
   });
 
   const searchTags = async (query: string): Promise<Tag[]> => {

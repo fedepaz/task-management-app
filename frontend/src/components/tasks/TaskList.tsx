@@ -152,32 +152,33 @@ export default function TaskList() {
           </div>
         )}
       </div>
-
-      <TaskModal
-        open={!!modalType}
-        onClose={() => {
-          setModalType(null);
-          setSelectedTask(undefined);
-        }}
-        mode={modalType === "create" ? "edit" : modalType || "edit"}
-        task={
-          modalType === "create"
-            ? ({
-                title: "",
-                status: "TODO",
-                priority: "MEDIUM",
-                user: { user: sessionUser?.id },
-              } as Task)
-            : selectedTask
-        }
-        onConfirm={
-          modalType === "delete"
-            ? handleDeleteTask
-            : modalType === "create"
-              ? handleCreateTask
-              : handleEditTask
-        }
-      />
+      <div className="bg-white p-4 rounded-lg shadow-sm border flex items-center gap-4 flex-wrap sm:flex-nowrap">
+        <TaskModal
+          open={!!modalType}
+          onClose={() => {
+            setModalType(null);
+            setSelectedTask(undefined);
+          }}
+          mode={modalType === "create" ? "edit" : modalType || "edit"}
+          task={
+            modalType === "create"
+              ? ({
+                  title: "",
+                  status: "TODO",
+                  priority: "MEDIUM",
+                  user: { user: sessionUser?.id },
+                } as Task)
+              : selectedTask
+          }
+          onConfirm={
+            modalType === "delete"
+              ? handleDeleteTask
+              : modalType === "create"
+                ? handleCreateTask
+                : handleEditTask
+          }
+        />
+      </div>
     </div>
   );
 }

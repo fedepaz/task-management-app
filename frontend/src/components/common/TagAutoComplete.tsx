@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tag } from "@task-app/shared/src/types/tag";
 import { useTags } from "@/hooks/useTag";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 interface TagAutoCompleteProps {
   onTagsChange: (tags: Tag["id"][]) => void;
@@ -80,8 +81,7 @@ export const TagAutoComplete = ({
       try {
         setIsSearching(true);
         const newTag = await createTag(inputValue.trim());
-        if (newTag?.id) {
-          await performInitialSearch(inputValue.charAt(0));
+        if (newTag) {
           handleSelectTag(newTag.id);
         }
       } catch (error) {
@@ -90,7 +90,7 @@ export const TagAutoComplete = ({
         setIsSearching(false);
       }
     }
-  }, [inputValue, createTag, handleSelectTag, performInitialSearch]);
+  }, [inputValue, createTag, handleSelectTag]);
 
   const handleRemoveTag = useCallback(
     (tagId: Tag["id"]) => {
@@ -168,14 +168,13 @@ export const TagAutoComplete = ({
           }}
           className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           placeholder="Search or create tags..."
+          autoComplete="off"
         />
         {open && inputValue && (
           <div className="absolute z-50 w-full mt-2 rounded-md border bg-popover text-popover-foreground shadow-md">
             <div className="max-h-48 overflow-auto p-1">
               {isSearching ? (
-                <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                  Searching...
-                </div>
+                <LoadingSpinner />
               ) : (
                 <>
                   {filteredResults.length > 0

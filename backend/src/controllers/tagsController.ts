@@ -13,8 +13,9 @@ export class TagsController {
       const tag = await this.tagsService.createTag(req.body.name);
 
       res.status(201).json({
-        message: "Tag created successfully",
-        tag,
+        id: tag.id,
+        name: tag.name,
+        createdAt: tag.createdAt,
       });
     } catch (error) {
       console.error("Error creating tag:", error);
