@@ -26,8 +26,9 @@ export const useAuth = () => {
     onError: (error: Error) => {
       const errorMessage =
         error instanceof AxiosError
-          ? error.response?.data?.message
+          ? error.response?.data?.error.message
           : "Ocurrió un error inesperado";
+
       return errorMessage;
     },
   });
@@ -43,24 +44,30 @@ export const useAuth = () => {
     onError: (error: Error) => {
       const errorMessage =
         error instanceof AxiosError
-          ? error.response?.data?.message
+          ? error.response?.data?.error.message
           : "Ocurrió un error inesperado";
       return errorMessage;
     },
   });
 
-  const logout = async () => {
-    queryClient.setQueryData(["session"], { authenticated: false, user: null });
-    queryClient.invalidateQueries({ queryKey: ["session"] });
-    navigate("/auth");
-  };
+  const logoutMutation = useMutation({
+    mutationFn: authService.logout,
+    onSuccess: () => {
+      queryClient.setQueryData(["session"], {
+        authenticated: false,
+        user: null,
+      });
+      queryClient.invalidateQueries({ queryKey: ["session"] });
+      navigate("/login");
+    },
+  });
 
   return {
     user: sessionData?.authenticated ? sessionData.user : null,
     error: loginMutation.error || registerMutation.error,
     login: loginMutation.mutate,
     register: registerMutation.mutate,
-    logout,
+    logout: logoutMutation.mutate,
     isLoading: loginMutation.isPending || registerMutation.isPending,
     isAuthChecking,
   };

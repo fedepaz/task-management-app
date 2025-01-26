@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,25 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Task } from "@task-app/shared";
 import { TagAutoComplete } from "../common/TagAutoComplete";
 
 interface TaskModalProps {
   open: boolean;
-  onClose: () => void;
+  onClose: (taskWithChanges?: Task) => void;
   mode: "edit" | "delete";
   task?: Task;
   onConfirm: (task?: Task) => void;
+  onHasChangesUpdate?: (hasChanges: boolean) => void;
 }
 
 export function TaskModal({
@@ -46,58 +37,41 @@ export function TaskModal({
   onConfirm,
 }: TaskModalProps) {
   const [editedTask, setEditedTask] = useState<Task | undefined>(task);
-  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     setEditedTask(task);
-    setHasChanges(false);
   }, [task]);
+
+  const handleClose = useCallback(() => {
+    if (editedTask && JSON.stringify(editedTask) !== JSON.stringify(task)) {
+      onClose(editedTask);
+    } else {
+      onClose();
+    }
+  }, [editedTask, onClose, task]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && open && !showExitConfirmation) {
+      if (e.key === "Escape" && open) {
         e.preventDefault();
-        if (hasChanges) {
-          setShowExitConfirmation(true);
-        } else {
-          onClose();
-        }
+        handleClose();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, hasChanges, showExitConfirmation, onClose]);
+  }, [open, handleClose]);
 
   const handleConfirm = () => {
+    if (!editedTask) return;
     onConfirm(editedTask);
-    setHasChanges(false);
     onClose();
-  };
-
-  const handleClose = () => {
-    if (hasChanges) {
-      setShowExitConfirmation(true);
-    } else {
-      onClose();
-    }
-  };
-
-  const handleExitConfirm = () => {
-    setShowExitConfirmation(false);
-    setHasChanges(false);
-    onClose();
-  };
-
-  const handleExitCancel = () => {
-    setShowExitConfirmation(false);
   };
 
   const handleFieldChange = <K extends keyof Task>(
     field: K,
     value: Task[K]
   ) => {
-    setHasChanges(true);
     setEditedTask((prev) => {
       if (!prev) return prev;
       return {
@@ -123,7 +97,7 @@ export function TaskModal({
 
   if (mode === "delete") {
     return (
-      <Dialog open={open} onOpenChange={onClose}>
+      <Dialog open={open} onOpenChange={handleClose} modal={true}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Delete Task</DialogTitle>
@@ -133,7 +107,7 @@ export function TaskModal({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="ghost" onClick={onClose}>
+            <Button variant="ghost" onClick={handleClose}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={() => onConfirm(task)}>
@@ -147,8 +121,17 @@ export function TaskModal({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleClose}>
+      <Dialog
+        open={open}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleClose();
+          }
+        }}
+        modal={true}
+      >
         <DialogContent
+          aria-hidden={undefined}
           className="sm:max-w-[600px]"
           onEscapeKeyDown={(e) => {
             e.preventDefault();
@@ -295,35 +278,6 @@ export function TaskModal({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {showExitConfirmation && (
-        <AlertDialog
-          open={showExitConfirmation}
-          onOpenChange={setShowExitConfirmation}
-        >
-          <AlertDialogContent
-            onEscapeKeyDown={(e) => {
-              e.preventDefault();
-              handleExitCancel();
-            }}
-          >
-            <AlertDialogHeader>
-              <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-              <AlertDialogDescription>
-                You have unsaved changes. Are you sure you want to exit?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={handleExitCancel}>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={handleExitConfirm}>
-                Exit
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
     </>
   );
 }

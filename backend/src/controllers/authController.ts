@@ -13,6 +13,7 @@ export class AuthController {
   constructor() {
     this.userService = new UserService();
   }
+
   loggedIn = async (
     req: Request,
     res: Response,
@@ -53,6 +54,23 @@ export class AuthController {
           message: "Invalid or expired token",
         });
       }
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  logout = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> => {
+    try {
+      res.clearCookie("access_token");
+
+      return res.status(200).json({
+        authenticated: false,
+        message: "User logged out",
+      });
     } catch (error) {
       next(error);
     }

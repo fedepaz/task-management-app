@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CheckSquare, Calendar, User, Menu, X } from "lucide-react";
+import { CheckSquare, Calendar, User, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ConfirmationDialog } from "../common/ConfirmationDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { path: "/", icon: CheckSquare, label: "Tasks" },
@@ -11,7 +13,22 @@ const navItems = [
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const location = useLocation();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    setShowLogoutConfirmation(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    logout();
+    setShowLogoutConfirmation(false);
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutConfirmation(false);
+  };
 
   return (
     <>
@@ -76,8 +93,26 @@ export default function Sidebar() {
               </Link>
             ))}
           </nav>
+          {/* Logout Button */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            onClick={handleLogout}
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            Logout
+          </Button>
         </div>
       </aside>
+      <ConfirmationDialog
+        isOpen={showLogoutConfirmation}
+        onCancel={handleLogoutCancel}
+        onConfirm={handleLogoutConfirm}
+        title="Are you sure you want to logout?"
+        description="You will be redirected to the login page."
+        confirmText="Logout"
+        cancelText="Cancel"
+      />
     </>
   );
 }

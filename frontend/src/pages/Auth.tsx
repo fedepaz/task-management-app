@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ErrorModal } from "@/components/common/ErrorModal";
 import { LoginCredentials, RegisterCredentials } from "@task-app/shared";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { AxiosError } from "axios";
 
 export default function AuthPage() {
   const { login, register, error, isLoading } = useAuth();
@@ -23,10 +24,19 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (error) {
-      setErrorModal({
-        show: true,
-        message: error.message,
-      });
+      if (error instanceof AxiosError) {
+        setErrorModal({
+          show: true,
+          message:
+            error.response?.data?.error.message ||
+            "An unexpected error occurred",
+        });
+      } else {
+        setErrorModal({
+          show: true,
+          message: error.message,
+        });
+      }
     }
   }, [error]);
 
@@ -78,14 +88,17 @@ export default function AuthPage() {
               {isLogin && (
                 <>
                   <Input
+                    name="email"
                     type="email"
-                    placeholder="Email address"
+                    placeholder="Email Address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     className="w-full"
+                    autoComplete="email"
                   />
                   <Input
+                    name="password"
                     type="password"
                     placeholder="Password"
                     value={password}

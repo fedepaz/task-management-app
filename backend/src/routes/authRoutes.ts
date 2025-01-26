@@ -6,6 +6,7 @@ const sessionRoutes = express.Router();
 const authController = new AuthController();
 
 sessionRoutes.get("/session", asyncHandler(authController.loggedIn));
+sessionRoutes.post("/logout", asyncHandler(authController.logout));
 
 sessionRoutes.post(
   "/refreshToken",

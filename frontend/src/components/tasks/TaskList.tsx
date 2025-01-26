@@ -9,6 +9,7 @@ import { LoadingSpinner } from "../common/LoadingSpinner";
 import { useAuth } from "@/hooks/useAuth";
 import { AxiosError } from "axios";
 import { TaskCard } from "./TaskCard";
+import { ConfirmationDialog } from "../common/ConfirmationDialog";
 
 export default function TaskList() {
   const {
@@ -24,6 +25,7 @@ export default function TaskList() {
   } = useTasks();
 
   const { user: sessionUser } = useAuth();
+  const [unsavedChanges, setUnsavedChanges] = useState<Task | undefined>();
 
   const [selectedTask, setSelectedTask] = useState<Task | undefined>();
   const [modalType, setModalType] = useState<
@@ -36,6 +38,32 @@ export default function TaskList() {
     show: false,
   });
 
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+
+  const handleModalClose = (taskWithChanges?: Task) => {
+    if (taskWithChanges) {
+      setUnsavedChanges(taskWithChanges);
+      setIsConfirmationOpen(true);
+    } else {
+      setModalType(null);
+      setSelectedTask(undefined);
+    }
+  };
+
+  const handleConfirmationCancel = () => {
+    setIsConfirmationOpen(false);
+    setModalType("edit");
+    setSelectedTask(unsavedChanges);
+    setUnsavedChanges(undefined);
+  };
+
+  const handleConfirmationDiscard = () => {
+    setIsConfirmationOpen(false);
+    setModalType(null);
+    setSelectedTask(undefined);
+    setUnsavedChanges(undefined);
+  };
+
   useEffect(() => {
     if (error) {
       setErrorModal({
@@ -46,6 +74,7 @@ export default function TaskList() {
             : "An unexpected error occurred while fetching tasks",
       });
     }
+    return () => setErrorModal({ show: false });
   }, [error]);
 
   const handleCreateTask = (newTask?: Task) => {
@@ -152,33 +181,39 @@ export default function TaskList() {
           </div>
         )}
       </div>
-      <div className="bg-white p-4 rounded-lg shadow-sm border flex items-center gap-4 flex-wrap sm:flex-nowrap">
-        <TaskModal
-          open={!!modalType}
-          onClose={() => {
-            setModalType(null);
-            setSelectedTask(undefined);
-          }}
-          mode={modalType === "create" ? "edit" : modalType || "edit"}
-          task={
-            modalType === "create"
-              ? ({
-                  title: "",
-                  status: "TODO",
-                  priority: "MEDIUM",
-                  user: { user: sessionUser?.id },
-                } as Task)
-              : selectedTask
-          }
-          onConfirm={
-            modalType === "delete"
-              ? handleDeleteTask
-              : modalType === "create"
-                ? handleCreateTask
-                : handleEditTask
-          }
+      <TaskModal
+        open={!!modalType}
+        onClose={handleModalClose}
+        mode={modalType === "create" ? "edit" : modalType || "edit"}
+        task={
+          modalType === "create"
+            ? ({
+                title: "",
+                status: "TODO",
+                priority: "MEDIUM",
+                user: { user: sessionUser?.id },
+              } as Task)
+            : selectedTask
+        }
+        onConfirm={
+          modalType === "delete"
+            ? handleDeleteTask
+            : modalType === "create"
+              ? handleCreateTask
+              : handleEditTask
+        }
+      />
+      {isConfirmationOpen && (
+        <ConfirmationDialog
+          isOpen={isConfirmationOpen}
+          onCancel={handleConfirmationCancel}
+          onConfirm={handleConfirmationDiscard}
+          title="Discard Changes"
+          description="Are you sure you want to discard the changes you've made?"
+          confirmText="Discard"
+          cancelText="Cancel"
         />
-      </div>
+      )}
     </div>
   );
 }

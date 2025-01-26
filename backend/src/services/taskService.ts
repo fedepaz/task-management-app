@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import { TaskModel } from "../models/Task";
 import { Task } from "@task-app/shared/src/types/task";
+import Error from "../models/Error";
 
 export class TaskService {
   async createTask(taskData: Partial<Task>): Promise<Task> {
@@ -36,7 +37,7 @@ export class TaskService {
     );
 
     if (!updatedTask) {
-      throw new Error("Task not found");
+      throw new Error({ message: "Task not found", statusCode: 404 });
     }
 
     return updatedTask;
@@ -49,7 +50,7 @@ export class TaskService {
     });
 
     if (!deletedTask) {
-      throw new Error("Task not found");
+      throw new Error({ message: "Task not found", statusCode: 404 });
     }
   }
 }

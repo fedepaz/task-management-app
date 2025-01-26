@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { UserModel } from "../models/User";
+import Error from "../models/Error";
 import {
   LoginCredentialsSchema,
   RegisterCredentialsSchema,
@@ -16,7 +17,10 @@ export class UserService {
       email: validatedData.email,
     });
     if (existingUser) {
-      throw new Error("User already exists");
+      throw new Error({
+        message: "User already exists",
+        statusCode: 422,
+      });
     }
 
     const passwordHash = await bcrypt.hash(validatedData.password, 10);
@@ -43,7 +47,7 @@ export class UserService {
 
     const user = await UserModel.findOne({ email: validatedData.email });
     if (!user) {
-      throw new Error("User not found");
+      throw new Error({ message: "User not found", statusCode: 404 });
     }
 
     const isValidPassword = await bcrypt.compare(
@@ -52,7 +56,10 @@ export class UserService {
     );
 
     if (!isValidPassword) {
-      throw new Error("Invalid credentials");
+      throw new Error({
+        message: "The user or password is incorrect",
+        statusCode: 401,
+      });
     }
 
     return {
@@ -78,8 +85,23 @@ export class UserService {
         role: user.role,
       };
     } catch (error) {
-      console.error("Session validation error:", error);
-      return null;
+      throw new Error({
+        message: "Failed to validate session",
+        statusCode: 401,
+      });
+    }
+  }
+
+  async logout(userId: string): Promise<void> {
+    try {
+      await UserModel.findByIdAndUpdate(userId, {
+        $set: { refreshToken: null },
+      });
+    } catch (error) {
+      throw new Error({
+        message: "Failed to logout",
+        statusCode: 400,
+      });
     }
   }
 }

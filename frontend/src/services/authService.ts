@@ -32,4 +32,10 @@ export const authService = {
     });
     return response.data;
   },
+  async logout() {
+    const response = await axios.post(`${API_URL}/logout`, null, {
+      withCredentials: true,
+    });
+    return response.data;
+  },
 };
