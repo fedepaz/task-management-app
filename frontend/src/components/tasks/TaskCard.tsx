@@ -33,7 +33,7 @@ export const TaskCard = ({
         task.status === "COMPLETED" ? "opacity-60" : ""
       }`}
     >
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-2 $">
         <span
           className={`text-xs font-semibold px-2 py-1 rounded-full ${
             priorityColors[task.priority as keyof typeof priorityColors]

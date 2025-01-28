@@ -1,14 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import TaskCalendar from "@/components/tasks/TaskCalendar";
 import { Task } from "@task-app/shared";
 import { useTasks } from "@/hooks/useTasks";
 import { ErrorModal } from "@/components/common/ErrorModal";
 import { AxiosError } from "axios";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { ConfirmationDialog } from "@/components/common/ConfirmationDialog";
+import { TaskModal } from "@/components/common/TaskModal";
 
 export default function CalendarPage() {
-  const { tasks: data = [], isLoading, error } = useTasks();
+  const { tasks: data = [], isLoading, error, updateTask } = useTasks();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>();
+  const [modalType, setModalType] = useState<
+    "edit" | "delete" | "create" | null
+  >(null);
+  const [unsavedChanges, setUnsavedChanges] = useState<Task | undefined>();
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+
   const [errorModal, setErrorModal] = useState<{
     show: boolean;
     message?: string;
@@ -18,7 +27,6 @@ export default function CalendarPage() {
 
   useEffect(() => {
     if (error) {
-      console.log(error);
       setErrorModal({
         show: true,
         message:
@@ -33,6 +41,46 @@ export default function CalendarPage() {
     setTasks(data);
   }, [data]);
 
+  const handleSelectTask = useCallback((task: Task) => {
+    setSelectedTask(task);
+    setModalType("edit");
+  }, []);
+
+  const handleModalClose = useCallback((taskWithChanges?: Task) => {
+    if (taskWithChanges) {
+      setUnsavedChanges(taskWithChanges);
+      setIsConfirmationOpen(true);
+    } else {
+      setModalType(null);
+      setSelectedTask(undefined);
+    }
+  }, []);
+
+  const handleConfirmationCancel = useCallback(() => {
+    setIsConfirmationOpen(false);
+    setModalType("edit");
+    setSelectedTask(unsavedChanges);
+    setUnsavedChanges(undefined);
+  }, [unsavedChanges]);
+
+  const handleConfirmationDiscard = useCallback(() => {
+    setIsConfirmationOpen(false);
+    setModalType(null);
+    setSelectedTask(undefined);
+    setUnsavedChanges(undefined);
+  }, []);
+
+  const handleEditTask = useCallback(
+    (taskToUpdate?: Task) => {
+      if (taskToUpdate) {
+        updateTask({ ...taskToUpdate, updatedAt: new Date() });
+        setModalType(null);
+        setSelectedTask(undefined);
+      }
+    },
+    [updateTask]
+  );
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -46,8 +94,26 @@ export default function CalendarPage() {
       />
       <div className="space-y-4">
         <h1 className="text-2xl font-bold text-gray-800">Task Calendar</h1>
-        <TaskCalendar tasks={tasks} />
+        <TaskCalendar tasks={tasks} onSelectTask={handleSelectTask} />
       </div>
+      <TaskModal
+        open={!!modalType}
+        onClose={handleModalClose}
+        mode={modalType === "create" ? "edit" : modalType || "edit"}
+        task={selectedTask}
+        onConfirm={handleEditTask}
+      />
+      {isConfirmationOpen && (
+        <ConfirmationDialog
+          isOpen={isConfirmationOpen}
+          onCancel={handleConfirmationCancel}
+          onConfirm={handleConfirmationDiscard}
+          title="Discard Changes"
+          description="Are you sure you want to discard the changes you've made?"
+          confirmText="Discard"
+          cancelText="Cancel"
+        />
+      )}
     </div>
   );
 }

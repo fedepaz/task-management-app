@@ -4,6 +4,7 @@ import { CheckSquare, Calendar, User, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ConfirmationDialog } from "../common/ConfirmationDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { cn, getRoleColor } from "@/lib/utils";
 
 const navItems = [
   { path: "/", icon: CheckSquare, label: "Tasks" },
@@ -15,7 +16,8 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const BASE_COLORS = user ? getRoleColor(user.role) : getRoleColor("USER");
 
   const handleLogout = () => {
     setShowLogoutConfirmation(true);
@@ -30,6 +32,13 @@ export default function Sidebar() {
     setShowLogoutConfirmation(false);
   };
 
+  const roleColors = {
+    bg: BASE_COLORS.bg,
+    hoverBg: `hover:${BASE_COLORS.bg}`,
+    activeBg: `active:${BASE_COLORS.bg}`,
+    text: BASE_COLORS.text,
+  };
+
   return (
     <>
       {/* Mobile Menu Button */}
@@ -40,7 +49,7 @@ export default function Sidebar() {
           onClick={() => setIsOpen(!isOpen)}
           className="hover:bg-gray-100"
         >
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </Button>
       </div>
 
@@ -54,24 +63,15 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`
-        fixed lg:static inset-y-0 left-0 z-40
-        w-64 bg-white border-r transform transition-transform duration-200 ease-in-out
-        ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-      `}
+        className={cn(
+          "fixed lg:static inset-y-0 left-0 z-40 w-64",
+          roleColors.bg,
+          "border-r transform transition-transform duration-200 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        )}
       >
         <div className="flex flex-col h-full p-4">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-xl font-bold">Task App</h1>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden hover:bg-gray-100"
-              onClick={() => setIsOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+          <div className="flex items-center justify-between mb-8"></div>
 
           <nav className="space-y-2">
             {navItems.map(({ path, icon: Icon, label }) => (
@@ -79,14 +79,16 @@ export default function Sidebar() {
                 key={path}
                 to={path}
                 onClick={() => setIsOpen(false)}
-                className={`
-                  flex items-center p-2 rounded-lg transition-colors
-                  ${
-                    location.pathname === path
-                      ? "bg-gray-100 text-gray-900"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }
-                `}
+                className={cn(
+                  "flex items-center p-2 rounded-lg transition-colors",
+                  location.pathname === path
+                    ? cn(roleColors.bg, roleColors.text, "bg-opacity-100")
+                    : cn(
+                        "text-gray-600 hover:bg-opacity-80",
+                        roleColors.bg,
+                        "bg-opacity-0 hover:bg-opacity-50"
+                      )
+                )}
               >
                 <Icon className="w-5 h-5 mr-3" />
                 {label}
@@ -96,7 +98,12 @@ export default function Sidebar() {
           {/* Logout Button */}
           <Button
             variant="ghost"
-            className="w-full justify-start text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            className={cn(
+              "w-full justify-start",
+              "text-gray-600",
+              roleColors.bg,
+              "bg-opacity-0 hover:bg-opacity-50"
+            )}
             onClick={handleLogout}
           >
             <LogOut className="w-5 h-5 mr-3" />

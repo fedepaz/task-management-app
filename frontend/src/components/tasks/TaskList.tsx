@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AxiosError } from "axios";
 import { TaskCard } from "./TaskCard";
 import { ConfirmationDialog } from "../common/ConfirmationDialog";
+import { getRoleColor } from "@/lib/utils";
 
 export default function TaskList() {
   const {
@@ -39,6 +40,9 @@ export default function TaskList() {
   });
 
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const roleColors = sessionUser
+    ? getRoleColor(sessionUser.role)
+    : getRoleColor("USER");
 
   const handleModalClose = (taskWithChanges?: Task) => {
     if (taskWithChanges) {
@@ -127,14 +131,14 @@ export default function TaskList() {
         onClose={() => setErrorModal({ show: false })}
         error={errorModal.message}
       />
-      <h1 className="text-center text-lg">
-        {sessionUser?.name.toLowerCase()}'s Tasks
+      <h1 className={`text-center text-2xl font-bold ${roleColors.text}`}>
+        {sessionUser?.name}'s Tasks
       </h1>
 
       <div className="flex flex-col sm:flex-row gap-4">
         <Button
           onClick={() => setModalType("create")}
-          className="whitespace-nowrap"
+          className={`whitespace-nowrap ${roleColors.buttonBg} text-white`}
           disabled={isCreating}
         >
           <PlusCircle className="w-5 h-5 mr-2" />
@@ -165,7 +169,7 @@ export default function TaskList() {
           <div
             id="noTaskAvailableId"
             key={"noTaskAvailableKey"}
-            className="bg-white p-4 rounded-lg shadow-sm border flex items-center gap-4 flex-wrap sm:flex-nowrap"
+            className={`${roleColors.bg} p-4 rounded-lg shadow-sm border flex items-center gap-4 flex-wrap sm:flex-nowrap`}
           >
             No tasks available
           </div>
@@ -175,7 +179,7 @@ export default function TaskList() {
           <div
             id="noTaskYetId"
             key={"noTaskYetKey"}
-            className="text-center p-8 text-gray-500"
+            className={`text-center p-8 ${roleColors.text}`}
           >
             No tasks yet. Add your first task above!
           </div>
