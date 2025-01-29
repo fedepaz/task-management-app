@@ -1,5 +1,5 @@
 import { useAuth } from "../hooks/useAuth";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import {
   Card,
   CardContent,
