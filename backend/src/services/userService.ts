@@ -4,10 +4,12 @@ import Error from "../models/Error";
 import {
   LoginCredentialsSchema,
   RegisterCredentialsSchema,
+} from "@task-app/shared/src/validation/auth";
+import {
   AuthUser,
   LoginCredentials,
   RegisterCredentials,
-} from "@task-app/shared";
+} from "@task-app/shared/src/types/auth";
 
 export class UserService {
   async register(credentials: RegisterCredentials): Promise<AuthUser> {
