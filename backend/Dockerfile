@@ -3,8 +3,9 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy workspace config
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
+COPY ../pnpm-workspace.yaml ./
+COPY ../package.json ./
+
 
 # Copy packages
 COPY ../shared/ ./shared/
