@@ -7,8 +7,8 @@ COPY pnpm-workspace.yaml ./
 COPY package.json ./
 
 # Copy packages
-COPY shared/ shared/
-COPY backend/ backend/
+COPY ../shared/ ./shared/
+COPY . ./backend/
 
 # Install dependencies
 RUN pnpm install
