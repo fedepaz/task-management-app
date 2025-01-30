@@ -3,7 +3,7 @@ FROM node:20-slim AS builder
 WORKDIR /app
 
 RUN apt-get update -y && apt-get install -y openssl
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.12.3
 
 # Copy workspace files
 COPY pnpm-workspace.yaml ./
@@ -27,12 +27,8 @@ RUN pnpm --filter @task-app/backend build
 
 FROM node:20-slim AS runner
 WORKDIR /app
-COPY --from=builder /app/shared/ ./shared/
-COPY --from=builder /app/shared/package.json ./shared/
-COPY --from=builder /app/shared/dist ./shared/dist
-COPY --from=builder /app/backend/dist ./dist
-COPY --from=builder /app/backend/package.json ./
+COPY --from=builder /app ./
 
 RUN npm install --global pnpm@9.12.3
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile
 CMD ["node", "dist/server.js"]
