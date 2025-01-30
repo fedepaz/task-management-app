@@ -14,7 +14,7 @@ COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Copy source files
 COPY shared/ ./shared/
@@ -28,5 +28,5 @@ FROM node:20-slim AS runner
 WORKDIR /app
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/package.json ./
-RUN npm install --production --frozen-lockfile
+RUN npm install --omit=dev
 CMD ["node", "dist/server.js"]
