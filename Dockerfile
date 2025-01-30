@@ -28,5 +28,8 @@ FROM node:20-slim AS runner
 WORKDIR /app
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/package.json ./
+COPY --from=builder /usr/local/bin/pnpm /usr/local/bin/pnpm
+COPY --from=builder /usr/local/lib/node_modules/pnpm /usr/local/lib/node_modules/pnpm
+
 RUN pnpm install --prod
 CMD ["node", "dist/server.js"]
