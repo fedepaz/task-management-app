@@ -62,4 +62,4 @@ RUN npm install --global pnpm@9.12.3
 RUN pnpm install --prod
 
 # Comando para ejecutar la aplicación
-CMD ["node", "backend/dist/server.js"]
+CMD ["node", "/dist/server.js"]
