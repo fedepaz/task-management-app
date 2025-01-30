@@ -1,24 +1,25 @@
+# You need to build from the root directory, not the backend directory
 FROM node:20-slim AS builder
 WORKDIR /app
+
 RUN npm install -g pnpm
 
-# Copy workspace config
-COPY ../pnpm-workspace.yaml ./
-COPY ../package.json ./
+# Copy workspace files
+COPY pnpm-workspace.yaml ./
+COPY package.json ./
 
-# Copy package.json files first for better caching
-COPY ../shared/package.json ./shared/
-COPY ./package.json ./backend/
+# Copy package files for all workspaces
+COPY shared/package.json ./shared/
+COPY backend/package.json ./backend/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy packages
-COPY ../shared/ ./shared/
-COPY . ./backend/
+# Copy source files
+COPY shared/ ./shared/
+COPY backend/ ./backend/
 
-
-# Build shared and backend
+# Build packages
 RUN pnpm --filter @task-app/shared build
 RUN pnpm --filter @task-app/backend build
 

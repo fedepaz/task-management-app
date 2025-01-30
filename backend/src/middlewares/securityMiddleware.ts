@@ -4,7 +4,13 @@ import cors from "cors";
 export const configureSecurityMiddleware = (app: any) => {
   app.use(helmet());
 
-  const allowedOrigins = ["http://localhost:5173"];
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "https://task-management-app.vercel.app",
+    "https://task-management-app-fedepazs-projects.vercel.app/",
+    "https://task-management-jcfxvujlm-fedepazs-projects.vercel.app/",
+    "https://task-management-app-git-master-fedepazs-projects.vercel.app/",
+  ];
 
   const corsOptions = {
     origin: (
@@ -23,6 +29,6 @@ export const configureSecurityMiddleware = (app: any) => {
     credentials: true,
     optionsSuccessStatus: 200,
   };
-  /// corsP
+
   app.use(cors(corsOptions));
 };
