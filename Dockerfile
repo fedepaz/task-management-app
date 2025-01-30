@@ -55,6 +55,8 @@ COPY --from=builder /app/backend/dist ./
 # Verifica los archivos copiados en la etapa final
 RUN ls -a
 RUN ls -a shared
+RUN ls -a shared/dist
+RUN ls -a shared/dist/validation
 
 # Instala pnpm y dependencias de producción
 RUN npm install --global pnpm@9.12.3
