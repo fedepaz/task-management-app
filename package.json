@@ -17,7 +17,7 @@
     "@typescript-eslint/parser": "^6.x",
     "eslint": "^8.x",
     "prettier": "^3.x",
-    "turbo": "latest",
+    "turbo": "^1.x",
     "typescript": "^5.x"
   },
   "packageManager": "pnpm@9.12.3"
