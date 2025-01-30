@@ -29,9 +29,10 @@ FROM node:20-slim AS runner
 WORKDIR /app
 COPY --from=builder /app/shared/ ./shared/
 COPY --from=builder /app/shared/package.json ./shared/
+COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/package.json ./
 
 RUN npm install --global pnpm@9.12.3
-RUN pnpm install --prod
+RUN pnpm install --no-frozen-lockfile
 CMD ["node", "dist/server.js"]
