@@ -50,7 +50,7 @@ COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/shared/package.json ./shared/
 COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/backend/package.json ./
-COPY --from=builder /app/backend/dist ./
+COPY --from=builder /app/backend/dist ./dist
 
 # Verifica los archivos copiados en la etapa final
 RUN ls -a
@@ -65,4 +65,4 @@ RUN pnpm install --prod
 RUN apt-get update -y && apt-get install -y openssl
 
 # Comando para ejecutar la aplicación
-CMD ["node", "server.js"]
+CMD ["node", "dist/server.js"]
