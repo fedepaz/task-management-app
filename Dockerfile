@@ -27,7 +27,7 @@ RUN pnpm --filter @task-app/backend build
 
 FROM node:20-slim AS runner
 WORKDIR /app
-COPY --from=builder /app ./
+COPY --from=builder ./ ./
 
 RUN npm install --global pnpm@9.12.3
 RUN pnpm install --prod --frozen-lockfile
