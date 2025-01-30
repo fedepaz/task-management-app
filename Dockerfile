@@ -30,5 +30,5 @@ WORKDIR /app
 COPY --from=builder ./ ./
 
 RUN npm install --global pnpm@9.12.3
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod 
 CMD ["node", "dist/server.js"]
