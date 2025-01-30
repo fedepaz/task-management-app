@@ -35,6 +35,7 @@ jobs:
           VITE_API_URL: ${{ secrets.API_URL }}
 
       - name: Deploy to Vercel
-        run: npx vercel --token ${VERCEL_TOKEN} --prod
+        run: npm install --global vercel
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

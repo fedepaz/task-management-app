@@ -80,6 +80,8 @@ export default function TaskCalendar({ tasks, onSelectTask }: CalendarProps) {
 
   const handleNavigate = useCallback(
     (newDate: Date, view: View, action: NavigateAction) => {
+      console.log(newDate, view, action);
+
       setDate(newDate);
     },
     []
@@ -89,6 +91,7 @@ export default function TaskCalendar({ tasks, onSelectTask }: CalendarProps) {
     setView(newView);
   }, []);
 
+  /**
   const navigateCalendar = useCallback(
     (action: "PREV" | "NEXT" | "TODAY") => {
       const newDate = new Date(date);
@@ -111,6 +114,9 @@ export default function TaskCalendar({ tasks, onSelectTask }: CalendarProps) {
     },
     [date, view]
   );
+
+   * 
+   */
 
   const renderToolbar = useCallback(() => {
     const dateFormat = view === "month" ? "MMMM YYYY" : "MMMM D, YYYY";
@@ -188,7 +194,14 @@ export default function TaskCalendar({ tasks, onSelectTask }: CalendarProps) {
         </Select>
       </div>
     );
-  }, [date, view, navigateCalendar, handleViewChange]);
+  }, [
+    date,
+    view,
+    handleViewChange,
+    handleNavigate,
+    roleColors.border,
+    roleColors.text,
+  ]);
 
   return (
     <div className="space-y-4">
