@@ -1,11 +1,6 @@
 {
   "name": "task-management-app",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "backend",
-    "shared"
-  ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
