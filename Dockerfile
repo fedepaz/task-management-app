@@ -28,5 +28,5 @@ FROM node:20-slim AS runner
 WORKDIR /app
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/package.json ./
-RUN npm install --omit=dev
+RUN pnpm install --prod
 CMD ["node", "dist/server.js"]
