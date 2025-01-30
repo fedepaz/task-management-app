@@ -27,6 +27,7 @@ RUN pnpm --filter @task-app/backend build
 
 FROM node:20-slim AS runner
 WORKDIR /app
+COPY --from=builder /app/shared/ ./shared/
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/package.json ./
 
