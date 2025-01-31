@@ -7,8 +7,7 @@ export const configureSecurityMiddleware = (app: any) => {
   const allowedOrigins = [
     "http://localhost:3000",
     "https://task-management-app-eight-phi.vercel.app",
-    "https://task-management-app-fedepazs-projects.vercel.app",
-    "https://task-management-22n2lwnx5-fedepazs-projects.vercel.app",
+    "https://task-management-app-fedepaz-fedepazs-projects.vercel.app",
     "https://task-management-app-git-master-fedepazs-projects.vercel.app",
   ];
 

@@ -30,6 +30,7 @@ export const authService = {
     const response = await axios.get<SessionResponse>(`${API_URL}/session`, {
       withCredentials: true,
     });
+    console.log(response.data);
     return response.data;
   },
   async logout() {
