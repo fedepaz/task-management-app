@@ -1,11 +1,5 @@
 {
-  "build": {
-    "command": "cd .. && pnpm install && pnpm build",
-    "env": {
-      "PNPM_VERSION": "9.12.3",
-      "TURBO_VERSION": "1.13.4"
-    }
-  },
+  "buildCommand": "cd .. && pnpm install && pnpm build",
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
