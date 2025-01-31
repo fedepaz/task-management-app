@@ -4,7 +4,7 @@ import Error from "../models/Error";
 import {
   LoginCredentialsSchema,
   RegisterCredentialsSchema,
-} from "@task-app/shared/src/validation/auth";
+} from "@task-app/shared/dist/validation/auth";
 import {
   AuthUser,
   LoginCredentials,

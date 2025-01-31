@@ -15,7 +15,7 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@task-app/shared": ["../shared/src"]
+      "@task-app/shared": ["../shared/dist/*"]
     }
   },
   "include": ["src/**/*"],
