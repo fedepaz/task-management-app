@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-axiosInstance.interceptors.response.use((config) => {
+axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -61,6 +61,7 @@ export const authService = {
     const response = await axiosInstance.post("/logout");
     console.log("LOGGING OUT");
     console.log(response);
+    window.location.reload();
     return response.data;
   },
 };
