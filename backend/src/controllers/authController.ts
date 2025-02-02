@@ -78,8 +78,21 @@ export class AuthController {
           name: string;
         };
         if (await this.userService.logout(decoded.userId)) {
-          res.clearCookie("access_token");
-
+          res.clearCookie("access_token", {
+            httpOnly: true,
+            maxAge: 0,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
+            path: "/",
+          });
+          res.cookie("access_token", "", {
+            httpOnly: true,
+            maxAge: 0,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
+            expires: new Date(0),
+            path: "/",
+          });
           res.end();
         }
       } catch (tokenError) {
