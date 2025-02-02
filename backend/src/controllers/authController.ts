@@ -80,10 +80,7 @@ export class AuthController {
         if (await this.userService.logout(decoded.userId)) {
           res.clearCookie("access_token");
 
-          return res.status(200).json({
-            authenticated: false,
-            message: "User logged out",
-          });
+          res.end();
         }
       } catch (tokenError) {
         return res.status(401).json({
