@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { User } from "@task-app/shared/dist/types/user";
+import { User } from "@task-app/shared/src/types/user";
 
 const userSchema = new Schema<User & { passwordHash: string }>(
   {
