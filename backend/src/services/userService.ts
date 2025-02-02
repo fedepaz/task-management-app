@@ -94,11 +94,13 @@ export class UserService {
     }
   }
 
-  async logout(userId: string): Promise<void> {
+  async logout(userId: string): Promise<boolean> {
     try {
       await UserModel.findByIdAndUpdate(userId, {
         $set: { refreshToken: null },
       });
+
+      return true;
     } catch (error) {
       throw new Error({
         message: "Failed to logout",
@@ -107,3 +109,50 @@ export class UserService {
     }
   }
 }
+
+/**
+ * still having problems...
+
+it could be on the frontend hook the problem?
+
+  const logoutMutation = useMutation({
+    mutationFn: authService.logout,
+    onSuccess: () => {
+      queryClient.setQueryData(["session"], {
+        authenticated: false,
+        user: null,
+      });
+      queryClient.invalidateQueries({ queryKey: ["session"] });
+      navigate("/login");
+    },
+  });
+
+
+because i added logs to the controller on the back
+
+
+  logout = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> => {
+    console.log("Logging out");
+    const token = req.cookies.access_token;
+
+    const decoded = jwt.verify(token, SECRET) as {
+      userId: string;
+      name: string;
+    };
+    const result = await this.userService.logout(decoded.userId);
+    console.log("Result", result);
+    if (result) {
+      return res.status(200).json({
+        message: "User logged out successfully",
+      });
+    }
+  };
+
+and it's responding ok... but on the clientside the 
+
+
+ */

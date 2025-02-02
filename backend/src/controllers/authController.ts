@@ -64,69 +64,19 @@ export class AuthController {
     res: Response,
     next: NextFunction
   ): Promise<Response | void> => {
-    try {
-      res.clearCookie("access_token");
-
-      return res.status(200).json({
-        authenticated: false,
-        message: "User logged out",
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  refreshToken = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> => {
     const token = req.cookies.access_token;
 
-    if (!token) {
-      return res.status(401).json({
-        authenticated: false,
-        message: "No token found",
+    const decoded = jwt.verify(token, SECRET) as {
+      userId: string;
+      name: string;
+    };
+    const result = await this.userService.logout(decoded.userId);
+    if (result) {
+      res.clearCookie("access_token");
+      return res.status(200).json({
+        message: "User logged out successfully",
+        token: "",
       });
-    }
-
-    try {
-      const decoded = jwt.verify(token, SECRET) as {
-        userId: string;
-        name: string;
-      };
-
-      const user = await this.userService.validateSession(decoded.userId);
-
-      if (!user) {
-        return res.status(401).json({
-          authenticated: false,
-          message: "User not found",
-        });
-      }
-
-      const newToken = jwt.sign(
-        {
-          userId: user.id,
-          name: user.name,
-        },
-        SECRET,
-        { expiresIn: "24h" }
-      );
-
-      return res
-        .cookie("access_token", newToken, {
-          httpOnly: true,
-          maxAge: 86400000,
-          sameSite: "none",
-          secure: true,
-        })
-        .json({
-          authenticated: true,
-          user,
-        });
-    } catch (error) {
-      next(error);
     }
   };
 }

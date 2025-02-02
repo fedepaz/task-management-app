@@ -8,10 +8,4 @@ const authController = new AuthController();
 sessionRoutes.get("/session", asyncHandler(authController.loggedIn));
 sessionRoutes.post("/logout", asyncHandler(authController.logout));
 
-sessionRoutes.post(
-  "/refreshToken",
-  authMiddleware,
-  asyncHandler(authController.refreshToken)
-);
-
 export default sessionRoutes;

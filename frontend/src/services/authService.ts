@@ -7,25 +7,29 @@ import {
 } from "@task-app/shared";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const TOKEN_KEY = "access_token";
 const axiosInstance = axios.create({
   baseURL: API_URL,
   withCredentials: true,
 });
 
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error("API Error:", error.response?.data || error.message);
-    throw error;
+axiosInstance.interceptors.response.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+});
 
 export const authService = {
   async login(credentials: LoginCredentials) {
-    const response = await axiosInstance.post<{ user: AuthUser }>(
-      "/auth/login",
-      credentials
-    );
+    const response = await axiosInstance.post<{
+      user: AuthUser;
+      token: string;
+    }>("/auth/login", credentials);
+    if (response.data.token) {
+      localStorage.setItem(TOKEN_KEY, response.data.token);
+    }
     return response.data;
   },
 
@@ -43,13 +47,15 @@ export const authService = {
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        return { authenticated: false, user: null };
+        localStorage.removeItem(TOKEN_KEY);
+        return null;
       }
       throw error;
     }
   },
 
   async logout() {
+    localStorage.removeItem(TOKEN_KEY);
     const response = await axiosInstance.post("/logout");
     return response.data;
   },
