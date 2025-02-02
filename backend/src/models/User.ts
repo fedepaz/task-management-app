@@ -17,7 +17,7 @@ const userSchema = new Schema<User & { passwordHash: string }>(
     },
     role: {
       type: String,
-      enum: ["ADMIN", "USER", "MANAGER"],
+      enum: ["ADMIN", "USER", "GUEST"],
       default: "USER",
     },
     passwordHash: {
