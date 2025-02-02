@@ -2,7 +2,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: "ADMIN" | "USER" | "MANAGER";
+  role: "ADMIN" | "USER" | "GUEST";
   emailVerified?: boolean;
 }
 

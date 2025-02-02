@@ -44,6 +44,8 @@ export const authService = {
   async getCurrentUser() {
     try {
       const response = await axiosInstance.get<SessionResponse>("/session");
+      console.log("SESSION");
+      console.log(response);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -57,6 +59,8 @@ export const authService = {
   async logout() {
     localStorage.removeItem(TOKEN_KEY);
     const response = await axiosInstance.post("/logout");
+    console.log("LOGGING OUT");
+    console.log(response);
     return response.data;
   },
 };

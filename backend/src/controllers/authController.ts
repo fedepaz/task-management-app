@@ -43,7 +43,6 @@ export class AuthController {
             message: "User not found",
           });
         }
-
         return res.status(200).json({
           authenticated: true,
           user,
@@ -64,19 +63,36 @@ export class AuthController {
     res: Response,
     next: NextFunction
   ): Promise<Response | void> => {
-    const token = req.cookies.access_token;
+    try {
+      const token = req.cookies.access_token;
+      if (!token) {
+        return res.status(401).json({
+          authenticated: false,
+          message: "No authentication token found",
+        });
+      }
 
-    const decoded = jwt.verify(token, SECRET) as {
-      userId: string;
-      name: string;
-    };
-    const result = await this.userService.logout(decoded.userId);
-    if (result) {
-      res.clearCookie("access_token");
-      return res.status(200).json({
-        message: "User logged out successfully",
-        token: "",
-      });
+      try {
+        const decoded = jwt.verify(token, SECRET) as {
+          userId: string;
+          name: string;
+        };
+        if (await this.userService.logout(decoded.userId)) {
+          res.clearCookie("access_token");
+
+          return res.status(200).json({
+            authenticated: false,
+            message: "User logged out",
+          });
+        }
+      } catch (tokenError) {
+        return res.status(401).json({
+          authenticated: false,
+          message: "Invalid or expired token",
+        });
+      }
+    } catch (error) {
+      next(error);
     }
   };
 }

@@ -1,6 +1,5 @@
 import express from "express";
 import { AuthController } from "../controllers/authController";
-import authMiddleware from "../middlewares/authMiddleware";
 import { asyncHandler } from "../middlewares/asyncHandler";
 const sessionRoutes = express.Router();
 const authController = new AuthController();
