@@ -32,17 +32,29 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 9.12.3
-
+      - name: Build shared package
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
       - name: Install dependencies
         run: pnpm install
-  build:
-    name: Build
+
+  build_shared:
+    name: Build shared package
     runs-on: ubuntu-latest
     needs: [dependencies]
     steps:
       - name: Build shared package
         run: pnpm --filter @task-app/shared build
 
+  build_frontend:
+    name: Build frontend
+    runs-on: ubuntu-latest
+    needs: [dependencies]
+    steps:
       - name: Build frontend
         run: pnpm --filter @task-app/frontend build
         env:
