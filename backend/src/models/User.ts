@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { User } from "@task-app/shared/src/types/user";
+import { User } from "@task-app/shared/dist/types/user";
 
 const userSchema = new Schema<User & { passwordHash: string }>(
   {
@@ -17,7 +17,7 @@ const userSchema = new Schema<User & { passwordHash: string }>(
     },
     role: {
       type: String,
-      enum: ["ADMIN", "USER", "GUEST"],
+      enum: ["ADMIN", "USER", "MANAGER"],
       default: "USER",
     },
     passwordHash: {
