@@ -9,7 +9,7 @@ import {
   AuthUser,
   LoginCredentials,
   RegisterCredentials,
-} from "@task-app/shared/src/types/auth";
+} from "@task-app/shared/dist/types/auth";
 
 export class UserService {
   async register(credentials: RegisterCredentials): Promise<AuthUser> {

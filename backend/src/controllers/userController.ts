@@ -34,6 +34,8 @@ export class UserController {
       const token = jwt.sign({ name: user.name, userId: user.id }, SECRET, {
         expiresIn: "24h",
       });
+
+      const domain = process.env.NODE_ENV === "production" ? ".vercel.app" : "";
       res
         .cookie("access_token", token, {
           httpOnly: true,
@@ -43,7 +45,7 @@ export class UserController {
           path: "/",
         })
         .status(200)
-        .json({ user, token });
+        .json({ user });
     } catch (error) {
       next(error);
     }
