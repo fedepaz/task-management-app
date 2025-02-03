@@ -18,6 +18,14 @@ jobs:
       cache-hit: ${{ steps.cache.outputs.cache-hit }}
     steps:
       - uses: actions/checkout@v3
+      - name: Cache Dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -28,13 +36,6 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 9.12.3
-
-      - name: Cache Dependencies
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
@@ -75,12 +76,24 @@ jobs:
         run: pnpm --filter ${{ matrix.package }} build
         env:
           VITE_API_URL: ${{ secrets.API_URL }}
+      - name: Upload ${{ matrix.package }} Build Artifact
+        if: matrix.package == '@task-app/frontend'
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend/dist
 
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+      - name: Download Froetend Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend/dist
+
       - name: Cache Vercel CLI
         id: vercel-cache
         uses: actions/cache@v3
@@ -94,6 +107,7 @@ jobs:
         if: steps.vercel-cache.outputs.cache-hit != 'true'
 
       - name: Deploy to Vercel
+        working-directory: frontend/dist
         run: vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
