@@ -18,14 +18,6 @@ jobs:
       cache-hit: ${{ steps.cache.outputs.cache-hit }}
     steps:
       - uses: actions/checkout@v3
-      - name: Cache Dependencies
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-modules-
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -36,6 +28,15 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 9.12.3
+
+      - name: Cache Dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
@@ -52,15 +53,6 @@ jobs:
           - "@task-app/frontend"
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9.12.3
 
       - name: Restore dependencies
         uses: actions/cache@v3
@@ -78,7 +70,7 @@ jobs:
           VITE_API_URL: ${{ secrets.API_URL }}
       - name: Upload ${{ matrix.package }} Build Artifact
         if: matrix.package == '@task-app/frontend'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-build
           path: frontend/dist
@@ -89,7 +81,7 @@ jobs:
     needs: [build]
     steps:
       - name: Download Froetend Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: frontend/dist
