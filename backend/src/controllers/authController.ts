@@ -63,38 +63,14 @@ export class AuthController {
     res: Response,
     next: NextFunction
   ): Promise<Response | void> => {
-    try {
-      const token = req.cookies.access_token;
-      if (!token) {
-        return res.status(401).json({
-          authenticated: false,
-          message: "No authentication token found",
-        });
-      }
-
-      try {
-        const decoded = jwt.verify(token, SECRET) as {
-          userId: string;
-          name: string;
-        };
-        if (await this.userService.logout(decoded.userId)) {
-          res.clearCookie("access_token", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
-            path: "/",
-          });
-
-          res.end();
-        }
-      } catch (tokenError) {
-        return res.status(401).json({
-          authenticated: false,
-          message: "Invalid or expired token",
-        });
-      }
-    } catch (error) {
-      next(error);
-    }
+    res.cookie("access_token", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: 0,
+    });
+    return res.status(200).json({
+      message: "Logged out successfully",
+    });
   };
 }

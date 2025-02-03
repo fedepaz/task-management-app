@@ -6,21 +6,49 @@ on:
   pull_request:
     branches: [master]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  avoid_redundancy:
-    name: Cancel Workflow
+  setup:
+    name: Install Dependencies
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
     steps:
-      - uses: styfle/cancel-workflow-action@0.12.1
+      - uses: actions/checkout@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          access_token: ${{ github.token }}
-  dependencies:
-    name: Install dependencies
-    runs-on: ubuntu-latest
-    needs: [avoid_redundancy]
+          node-version: "20"
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9.12.3
+
+      - name: Cache Dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: pnpm install
+
+  build:
+    name: Parallel Build - ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    needs: [setup]
+    strategy:
+      matrix:
+        package:
+          - "@task-app/shared"
+          - "@task-app/frontend"
     steps:
       - uses: actions/checkout@v3
       - name: Setup Node.js
@@ -32,37 +60,40 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 9.12.3
-      - name: Build shared package
+
+      - name: Restore dependencies
         uses: actions/cache@v3
         with:
           path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-modules-
       - name: Install dependencies
         run: pnpm install
 
-  build_shared:
-    name: Build shared package
-    runs-on: ubuntu-latest
-    needs: [dependencies]
-    steps:
-      - name: Build shared package
-        run: pnpm --filter @task-app/shared build
-
-  build_frontend:
-    name: Build frontend
-    runs-on: ubuntu-latest
-    needs: [dependencies]
-    steps:
-      - name: Build frontend
-        run: pnpm --filter @task-app/frontend build
+      - name: Build ${{ matrix.package }}
+        run: pnpm --filter ${{ matrix.package }} build
         env:
           VITE_API_URL: ${{ secrets.API_URL }}
 
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Cache Vercel CLI
+        id: vercel-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-vercel-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vercel-
+      - name: Install Vercel CLI
+        run: npm install --global vercel
+        if: steps.vercel-cache.outputs.cache-hit != 'true'
+
       - name: Deploy to Vercel
-        run: |
-          npm install --global vercel
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
+        run: vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
