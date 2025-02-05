@@ -18,10 +18,23 @@ export class UserController {
     try {
       const user = await this.userService.register(req.body);
 
-      res.status(201).json({
-        message: "User registered successfully",
-        user,
+      const token = jwt.sign({ name: user.name, userId: user.id }, SECRET, {
+        expiresIn: "1d",
       });
+
+      res
+        .cookie("access_token", token, {
+          httpOnly: true,
+          maxAge: 86400000,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+        })
+        .status(201)
+        .json({
+          user,
+          token,
+        });
     } catch (error) {
       next(error);
     }
