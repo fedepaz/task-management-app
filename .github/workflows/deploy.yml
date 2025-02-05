@@ -107,7 +107,6 @@ jobs:
             ${{ runner.os }}-vercel-
       - name: Install Vercel CLI
         run: npm install --global vercel
-        if: steps.vercel-cache.outputs.cache-hit != 'true'
 
       - name: Deploy to Vercel
         working-directory: frontend/dist
