@@ -52,7 +52,7 @@ export class UserController {
         .cookie("access_token", token, {
           httpOnly: true,
           maxAge: 86400000,
-          sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
+          sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
           secure: process.env.NODE_ENV === "production",
           path: "/",
         })
