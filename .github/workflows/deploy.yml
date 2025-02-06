@@ -29,18 +29,40 @@ jobs:
         with:
           version: 9.12.3
 
+      - name: Configure pnpm
+        run: echo "node-linker=hoisted" >> .npmrc
+
+      - name: Clean cache
+        run: |
+          rm -rf backend/node_modules
+          rm -rf frontend/node_modules
+
       - name: Cache Dependencies
         id: cache
         uses: actions/cache@v3
         with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: |
+            backend/node_modules
+            frontend/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('backend/pnpm-lock.yaml', 'frontend/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-modules-
+            ${{ runner.os }}-pnpm
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pnpm install
+      - name: Cache Vercel CLI
+        id: vercel-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-vercel-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vercel-
+
+      - name: Install Vercel CLI
+        if: steps.vercel-cache.outputs.cache-hit != 'true'
+        run: npm install --global vercel@latest --no-audit --loglevel=error
 
   build:
     name: Parallel Build - ${{ matrix.package }}
@@ -57,10 +79,17 @@ jobs:
       - name: Restore dependencies
         uses: actions/cache@v3
         with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: |
+            backend/node_modules
+            frontend/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('backend/pnpm-lock.yaml', 'frontend/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-modules-
+            ${{ runner.os }}-pnpm-
+
+      - name: Clean Cache
+        run: |
+          rm -rf backend/node_modules
+          rm -rf frontend/node_modules
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -79,6 +108,7 @@ jobs:
         run: pnpm --filter ${{ matrix.package }} build
         env:
           VITE_API_URL: ${{ secrets.API_URL }}
+
       - name: Upload ${{ matrix.package }} Build Artifact
         if: matrix.package == '@task-app/frontend'
         uses: actions/upload-artifact@v4
@@ -105,8 +135,10 @@ jobs:
           key: ${{ runner.os }}-vercel-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-vercel-
+
       - name: Install Vercel CLI
-        run: npm install --global vercel
+        if: steps.vercel-cache.outputs.cache-hit != 'true'
+        run: npm install --global vercel@latest --no-audit --loglevel=error
 
       - name: Deploy to Vercel
         working-directory: frontend/dist
