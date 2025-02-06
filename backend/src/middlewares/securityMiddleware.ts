@@ -2,8 +2,6 @@ import helmet from "helmet";
 import cors from "cors";
 
 export const configureSecurityMiddleware = (app: any) => {
-  app.use(helmet());
-
   const allowedOrigins = [
     "http://localhost:3000",
     "https://task-management-app-eight-phi.vercel.app",
@@ -14,6 +12,30 @@ export const configureSecurityMiddleware = (app: any) => {
     "https://dist-fedepazs-projects.vercel.app",
     "https://dist-fedepaz-fedepazs-projects.vercel.app",
   ];
+
+  const contentSecurityPolicy = {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      fontSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", ...allowedOrigins],
+      frameSrc: ["'self'", ...allowedOrigins],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      childSrc: ["'self'"],
+    },
+  };
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: contentSecurityPolicy.directives,
+      },
+    })
+  );
 
   const corsOptions = {
     origin: (
